@@ -298,6 +298,9 @@ export class Alerts implements OnInit {
     this.complianceService.getAlertDetails(alertId).subscribe({
       next: (alert) => {
         this.selectedAlert = alert;
+        console.log('Alert loaded:', alert);
+        console.log('Rule Description:', alert.ruleDescription);
+        console.log('Rule Type:', alert.ruleType);
         
         // Load transaction details if available
         if (alert.transactionId) {
@@ -505,44 +508,46 @@ export class Alerts implements OnInit {
     return ruleString.split(',').map(rule => rule.trim()).filter(rule => rule.length > 0);
   }
 
-  getRuleType(rule: string): string {
-    if (!rule) return 'UNKNOWN';
-    
-    if (rule.includes('Threshold') || rule.includes('Large Transaction')) {
-      return 'THRESHOLD';
-    } else if (rule.includes('Velocity') || rule.includes('High Activity') || rule.includes('Burst') || rule.includes('Rapid')) {
-      return 'VELOCITY';
-    } else if (rule.includes('Structuring') || rule.includes('Smurfing') || rule.includes('Potential Structuring')) {
-      return 'STRUCTURING';
-    } else if (rule.includes('Cross-Border') || rule.includes('High-Risk')) {
-      return 'GEOGRAPHIC';
-    } else if (rule.includes('Frequency') || rule.includes('Weekend')) {
-      return 'FREQUENCY';
-    } else if (rule.includes('Daily Volume') || rule.includes('Volume')) {
-      return 'VOLUME';
-    } else {
-      return 'BEHAVIORAL';
+  getRuleType(rule: string, alert?: Alert): string {
+    // If alert has multiple rule types, find the matching one
+    if (alert && alert.ruleTypes && alert.ruleTypes.length > 0) {
+      const ruleNames = this.parseTriggeredRules(alert.ruleTriggered);
+      const ruleIndex = ruleNames.findIndex(r => r === rule);
+      if (ruleIndex >= 0 && ruleIndex < alert.ruleTypes.length) {
+        return alert.ruleTypes[ruleIndex];
+      }
+      // Fallback to first type
+      return alert.ruleTypes[0];
     }
+    
+    // Backward compatibility: use single ruleType
+    if (alert && alert.ruleType) {
+      return alert.ruleType;
+    }
+    
+    // If no alert or no ruleType, return UNKNOWN
+    return 'UNKNOWN';
   }
 
-  getRuleDescription(rule: string): string {
-    if (!rule) return 'No rule information available';
-    
-    if (rule.includes('Threshold') || rule.includes('Large Transaction')) {
-      return 'Transaction exceeded regulatory threshold limit requiring additional scrutiny under AML regulations.';
-    } else if (rule.includes('Velocity') || rule.includes('High Activity') || rule.includes('Burst') || rule.includes('Rapid')) {
-      return 'Multiple transactions in short time period indicating rapid movement of funds.';
-    } else if (rule.includes('Structuring') || rule.includes('Smurfing') || rule.includes('Potential Structuring')) {
-      return 'Breaking down large transactions into smaller amounts to avoid reporting thresholds.';
-    } else if (rule.includes('Cross-Border') || rule.includes('High-Risk')) {
-      return 'Transaction involves high-risk jurisdictions or cross-border transfers.';
-    } else if (rule.includes('Frequency') || rule.includes('Weekend')) {
-      return 'Abnormal transaction frequency or timing patterns detected.';
-    } else if (rule.includes('Daily Volume') || rule.includes('Volume')) {
-      return 'Daily transaction volume significantly exceeds normal patterns.';
-    } else {
-      return 'Suspicious patterns deviating from normal customer behavior detected.';
+  getRuleDescription(rule: string, alert?: Alert): string {
+    // If alert has multiple rule descriptions, find the matching one
+    if (alert && alert.ruleDescriptions && alert.ruleDescriptions.length > 0) {
+      const ruleNames = this.parseTriggeredRules(alert.ruleTriggered);
+      const ruleIndex = ruleNames.findIndex(r => r === rule);
+      if (ruleIndex >= 0 && ruleIndex < alert.ruleDescriptions.length) {
+        return alert.ruleDescriptions[ruleIndex];
+      }
+      // Fallback to first description
+      return alert.ruleDescriptions[0];
     }
+    
+    // Backward compatibility: use single ruleDescription
+    if (alert && alert.ruleDescription) {
+      return alert.ruleDescription;
+    }
+    
+    // If no alert or no description, return default message
+    return 'No rule description available';
   }
 
   isUnassigned(alert: Alert): boolean {

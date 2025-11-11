@@ -13,6 +13,9 @@ public interface RuleRepository extends JpaRepository<Rule, Long> {
     
     Optional<Rule> findByNameAndIsActiveTrue(String ruleName);
     
+    // Find rule by name (regardless of active status)
+    Rule findByName(String name);
+    
     // New methods for admin dashboard and compliance
     long countByIsActiveTrue();
     List<Rule> findByTypeAndIsActiveTrue(RuleType ruleType);

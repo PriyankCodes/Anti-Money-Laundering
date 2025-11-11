@@ -29,6 +29,7 @@ import com.tss.aml.dto.response.TransactionResponseDto;
 import com.tss.aml.entity.Alert;
 import com.tss.aml.entity.Sar;
 import com.tss.aml.entity.User;
+import com.tss.aml.repository.RuleRepository;
 import com.tss.aml.repository.SarRepository;
 import com.tss.aml.service.ComplianceOfficerService;
 import com.tss.aml.service.TransactionService;
@@ -49,11 +50,15 @@ public class ComplianceOfficerController {
 
 	@Autowired
 	private SarRepository sarRepository;
+	
+	@Autowired
+	private RuleRepository ruleRepository;
 
 	// === ALERTS ===
 	@GetMapping("/alerts")
 	public ResponseEntity<List<AlertResponseDto>> getAllAlerts() {
-		List<AlertResponseDto> alerts = complianceService.getAllAlerts().stream().map(AlertResponseDto::new)
+		List<AlertResponseDto> alerts = complianceService.getAllAlerts().stream()
+				.map(alert -> new AlertResponseDto(alert, ruleRepository))
 				.collect(Collectors.toList());
 		return ResponseEntity.ok(alerts);
 	}
@@ -66,13 +71,13 @@ public class ComplianceOfficerController {
 		}
 		Long officerId = ((User) auth.getPrincipal()).getUserId();
 		Alert alert = complianceService.assignAlertToOfficer(alertId, officerId);
-		return ResponseEntity.ok(new AlertResponseDto(alert));
+		return ResponseEntity.ok(new AlertResponseDto(alert, ruleRepository));
 	}
 
 	@GetMapping("/alerts/{alertId}")
 	public ResponseEntity<AlertResponseDto> getAlertDetails(@PathVariable Long alertId) {
 		Alert alert = complianceService.getAlertDetails(alertId);
-		return ResponseEntity.ok(new AlertResponseDto(alert));
+		return ResponseEntity.ok(new AlertResponseDto(alert, ruleRepository));
 	}
 
 	// === TRANSACTIONS ===
@@ -109,7 +114,7 @@ public class ComplianceOfficerController {
 		}
 		Long officerId = ((User) auth.getPrincipal()).getUserId();
 		Alert alert = complianceService.takeActionOnAlert(alertId, officerId, request);
-		return ResponseEntity.ok(new AlertResponseDto(alert));
+		return ResponseEntity.ok(new AlertResponseDto(alert, ruleRepository));
 	}
 
 	// === SAR ===
@@ -220,22 +225,8 @@ public class ComplianceOfficerController {
 
 	// Helper method
 	private com.tss.aml.dto.response.AlertResponseDto convertToAlertResponse(com.tss.aml.entity.Alert alert) {
-		com.tss.aml.dto.response.AlertResponseDto response = new com.tss.aml.dto.response.AlertResponseDto();
-		response.setAlertId(alert.getAlertId());
-		response.setCustomerId(alert.getCustomer().getUserId());
-		response.setCustomerName(alert.getCustomer().getFirstName() + " " + alert.getCustomer().getLastName());
-		response.setTransactionId(alert.getTransaction() != null ? alert.getTransaction().getTransactionId() : null);
-		response.setRuleTriggered(alert.getRuleTriggered());
-		response.setRiskScore(alert.getRiskScore());
-		response.setStatus(alert.getStatus());
-		response.setInvestigationStatus(alert.getInvestigationStatus());
-		response.setAssignedToOfficer(alert.getAssignedTo() != null ? alert.getAssignedTo().getEmail() : null);
-		response.setAssignedOfficerName(alert.getAssignedTo() != null
-				? alert.getAssignedTo().getFirstName() + " " + alert.getAssignedTo().getLastName()
-				: null);
-		response.setCreatedAt(alert.getCreatedAt());
-		response.setUpdatedAt(alert.getUpdatedAt());
-		return response;
+		// Use the new constructor that fetches rule details dynamically
+		return new com.tss.aml.dto.response.AlertResponseDto(alert, ruleRepository);
 	}
 
 	// === OFFICER PROFILE MANAGEMENT ===

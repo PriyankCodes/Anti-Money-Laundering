@@ -7,22 +7,24 @@ public class RuleEngineResult {
 	private final int riskScore;
 	private final List<String> triggeredRules;
 	private final List<String> triggeredRuleTypes;
+	private final List<String> triggeredRuleDescriptions;
 
 	private RuleEngineResult(boolean suspicious, int riskScore, List<String> triggeredRules,
-			List<String> triggeredRuleTypes) {
+			List<String> triggeredRuleTypes, List<String> triggeredRuleDescriptions) {
 		this.suspicious = suspicious;
 		this.riskScore = riskScore;
 		this.triggeredRules = triggeredRules;
 		this.triggeredRuleTypes = triggeredRuleTypes;
+		this.triggeredRuleDescriptions = triggeredRuleDescriptions;
 	}
 
 	public static RuleEngineResult suspicious(int riskScore, List<String> triggeredRules,
-			List<String> triggeredRuleTypes) {
-		return new RuleEngineResult(true, riskScore, triggeredRules, triggeredRuleTypes);
+			List<String> triggeredRuleTypes, List<String> triggeredRuleDescriptions) {
+		return new RuleEngineResult(true, riskScore, triggeredRules, triggeredRuleTypes, triggeredRuleDescriptions);
 	}
 
-	public static RuleEngineResult clean(int riskScore, List<String> triggeredRules, List<String> triggeredRuleTypes) {
-		return new RuleEngineResult(false, riskScore, triggeredRules, triggeredRuleTypes);
+	public static RuleEngineResult clean(int riskScore, List<String> triggeredRules, List<String> triggeredRuleTypes, List<String> triggeredRuleDescriptions) {
+		return new RuleEngineResult(false, riskScore, triggeredRules, triggeredRuleTypes, triggeredRuleDescriptions);
 	}
 
 	public boolean isSuspicious() {
@@ -39,5 +41,9 @@ public class RuleEngineResult {
 
 	public List<String> getTriggeredRuleTypes() {
 		return triggeredRuleTypes;
+	}
+
+	public List<String> getTriggeredRuleDescriptions() {
+		return triggeredRuleDescriptions;
 	}
 }

@@ -442,24 +442,14 @@ export class Sar implements OnInit {
     return 'UNUSUAL_TRANSACTIONS';
   }
 
-  getRuleDescription(rule: string): string {
-    if (!rule) return 'No rule information available';
-    
-    if (rule.includes('Threshold') || rule.includes('Large Transaction')) {
-      return 'This transaction exceeded the regulatory threshold limit for single transactions, which may indicate an attempt to move large sums of money that require additional scrutiny under AML regulations.';
-    } else if (rule.includes('Velocity') || rule.includes('High Activity')) {
-      return 'Unusual transaction velocity detected - multiple transactions occurring in a short time period, which could indicate rapid movement of funds to obscure the money trail.';
-    } else if (rule.includes('Structuring') || rule.includes('Smurfing')) {
-      return 'Potential structuring activity detected - breaking down large transactions into smaller amounts to avoid reporting thresholds, a common money laundering technique.';
-    } else if (rule.includes('Cross-Border') || rule.includes('High-Risk')) {
-      return 'Transaction involves high-risk jurisdictions or cross-border transfers that may be associated with money laundering, terrorist financing, or sanctions violations.';
-    } else if (rule.includes('Frequency') || rule.includes('Weekend')) {
-      return 'Abnormal transaction frequency or timing patterns detected, such as unusual activity during weekends or off-hours, which may indicate attempts to avoid detection.';
-    } else if (rule.includes('Daily Volume')) {
-      return 'Daily transaction volume significantly exceeds normal patterns for this customer, potentially indicating layering of illicit funds through multiple transactions.';
-    } else {
-      return 'This transaction triggered our AML monitoring system due to suspicious patterns that deviate from the customer\'s normal behavior and may indicate potential money laundering activity.';
+  getRuleDescription(rule: string, alert?: any): string {
+    // Always use dynamic description from database
+    if (alert && alert.ruleDescription) {
+      return alert.ruleDescription;
     }
+    
+    // If no alert or no description, return default message
+    return 'No rule description available';
   }
 
   generateActivityDescription(alert: Alert, amount?: number, currency?: string): string {

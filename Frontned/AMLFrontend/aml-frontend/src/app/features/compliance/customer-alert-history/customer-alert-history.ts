@@ -228,24 +228,14 @@ export class CustomerAlertHistory implements OnInit {
     this.customerTransactions = [];
   }
   
-  getRuleDescription(rule: string): string {
-    if (!rule) return 'No rule information available';
-    
-    if (rule.includes('Threshold') || rule.includes('Large Transaction')) {
-      return 'Transaction exceeded regulatory threshold limit requiring additional scrutiny under AML regulations.';
-    } else if (rule.includes('Velocity') || rule.includes('High Activity') || rule.includes('Burst') || rule.includes('Rapid')) {
-      return 'Multiple transactions in short time period indicating rapid movement of funds.';
-    } else if (rule.includes('Structuring') || rule.includes('Smurfing') || rule.includes('Potential Structuring')) {
-      return 'Breaking down large transactions into smaller amounts to avoid reporting thresholds.';
-    } else if (rule.includes('Cross-Border') || rule.includes('High-Risk')) {
-      return 'Transaction involves high-risk jurisdictions or cross-border transfers.';
-    } else if (rule.includes('Frequency') || rule.includes('Weekend')) {
-      return 'Abnormal transaction frequency or timing patterns detected.';
-    } else if (rule.includes('Daily Volume') || rule.includes('Volume')) {
-      return 'Daily transaction volume significantly exceeds normal patterns.';
-    } else {
-      return 'Suspicious patterns deviating from normal customer behavior detected.';
+  getRuleDescription(rule: string, alert?: any): string {
+    // Always use dynamic description from database
+    if (alert && alert.ruleDescription) {
+      return alert.ruleDescription;
     }
+    
+    // If no alert or no description, return default message
+    return 'No rule description available';
   }
 
   goBack(): void {

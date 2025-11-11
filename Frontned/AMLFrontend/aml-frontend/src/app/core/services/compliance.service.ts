@@ -10,6 +10,10 @@ export interface Alert {
   customerId: number;
   customerName: string;
   ruleTriggered: string;
+  ruleDescription?: string;      // First rule description (backward compatibility)
+  ruleType?: string;             // First rule type (backward compatibility)
+  ruleDescriptions?: string[];   // All rule descriptions
+  ruleTypes?: string[];          // All rule types
   riskScore: number;
   status: string;
   investigationStatus: string;

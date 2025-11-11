@@ -45,6 +45,14 @@ public class Alert {
 	// Store rule type for reporting/grouping
 	private String ruleType;
 
+	// Store rule description for display
+	private String ruleDescription;
+
+	// Optional: Reference to the actual Rule entity
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "rule_id")
+	private Rule rule;
+
 	@NotNull
 	private Integer riskScore;
 

@@ -53,6 +53,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
         List<String> triggeredRules = new ArrayList<>();
         List<String> triggeredRuleTypes = new ArrayList<>();
+        List<String> triggeredRuleDescriptions = new ArrayList<>();
 
         // We'll compute combined probability: combined = 1 - product(1 - p_i)
         double productOfNotP = 1.0;
@@ -76,6 +77,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
                     triggeredRules.add(rule.getName());
                     triggeredRuleTypes.add(rule.getType().name());
+                    triggeredRuleDescriptions.add(rule.getDescription() != null ? rule.getDescription() : "No description available");
 
                     // Convert absolute impact (1-100) into probability-like p in (0,1)
                     // using exponential transform: p = 1 - exp(-impact / DECAY_SCALE)
@@ -126,7 +128,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
         logger.info("Transaction Action: {}", action);
         logger.info("=== AML RULE EVALUATION END ===");
 
-        return suspicious ? RuleEngineResult.suspicious(finalScore, triggeredRules, triggeredRuleTypes)
-                : RuleEngineResult.clean(finalScore, triggeredRules, triggeredRuleTypes);
+        return suspicious ? RuleEngineResult.suspicious(finalScore, triggeredRules, triggeredRuleTypes, triggeredRuleDescriptions)
+                : RuleEngineResult.clean(finalScore, triggeredRules, triggeredRuleTypes, triggeredRuleDescriptions);
     }
 }

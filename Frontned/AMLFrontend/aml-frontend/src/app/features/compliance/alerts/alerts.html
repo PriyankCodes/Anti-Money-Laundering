@@ -433,7 +433,7 @@
             <div class="rule-label">Rule Triggered:</div>
             <div class="rule-value">{{ selectedAlert.ruleTriggered }}</div>
             <div class="rule-description">
-              <strong>Why Flagged:</strong> {{ getRuleDescription(selectedAlert.ruleTriggered) }}
+              <strong>Why Flagged:</strong> {{ getRuleDescription(selectedAlert.ruleTriggered, selectedAlert) }}
             </div>
           </div>
           
@@ -665,9 +665,9 @@
                 <tr *ngFor="let rule of parseTriggeredRules(selectedAlert.ruleTriggered)">
                   <td class="rule-name">{{ rule }}</td>
                   <td>
-                    <span class="rule-type-badge">{{ getRuleType(rule) }}</span>
+                    <span class="rule-type-badge">{{ getRuleType(rule, selectedAlert) }}</span>
                   </td>
-                  <td class="rule-desc">{{ getRuleDescription(rule) }}</td>
+                  <td class="rule-desc">{{ getRuleDescription(rule, selectedAlert) }}</td>
                 </tr>
               </tbody>
             </table>

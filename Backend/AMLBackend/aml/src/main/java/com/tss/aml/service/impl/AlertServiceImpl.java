@@ -30,6 +30,10 @@ public class AlertServiceImpl implements AlertService {
         if (!result.getTriggeredRuleTypes().isEmpty()) {
             alert.setRuleType(result.getTriggeredRuleTypes().get(0));
         }
+        // Store the first rule description
+        if (!result.getTriggeredRuleDescriptions().isEmpty()) {
+            alert.setRuleDescription(result.getTriggeredRuleDescriptions().get(0));
+        }
         alert.setRiskScore(result.getRiskScore());
         alert.setStatus(AlertStatus.OPEN); // Awaiting investigation
         // assignedTo remains null until assigned by system or admin
