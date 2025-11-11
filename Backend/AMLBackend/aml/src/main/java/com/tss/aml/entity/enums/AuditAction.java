@@ -1,0 +1,46 @@
+package com.tss.aml.entity.enums;
+
+public enum AuditAction {
+    // Authentication actions
+    LOGIN,
+    LOGOUT,
+    REGISTER,
+    PASSWORD_CHANGE,
+    ACCOUNT_LOCKED,
+    
+    // Account management
+    ACCOUNT_CREATED,
+    ACCOUNT_UPDATED,
+    ACCOUNT_DELETED,
+    ACCOUNT_SUSPENDED,
+    ACCOUNT_ACTIVATED,
+    
+    // Transaction actions
+    TRANSFER_FUNDS,
+    TRANSACTION_CREATED,
+    TRANSACTION_APPROVED,
+    TRANSACTION_REJECTED,
+    TRANSACTION_CANCELLED,
+    
+    // System actions
+    RULE_CREATED,
+    RULE_UPDATED,
+    RULE_DELETED,
+    ALERT_CREATED,
+    ALERT_INVESTIGATED,
+    ALERT_RESOLVED,
+    
+    // Data access
+    DATA_VIEWED,
+    DATA_EXPORTED,
+    DATA_IMPORTED,
+    
+    // Administrative actions
+    USER_CREATED,
+    USER_UPDATED,
+    USER_DELETED,
+    PERMISSION_GRANTED,
+    PERMISSION_REVOKED,
+    ACCOUNT_STATUS_UPDATE, PASSWORD_RESET_REQUEST, PASSWORD_RESET, TRANSACTION_UPDATED, TRANSACTION_STATUS_UPDATE,
+  
+}

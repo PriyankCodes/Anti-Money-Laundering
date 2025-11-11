@@ -1,0 +1,14 @@
+# Ignore Eclipse/IDE metadata
+.metadata/
+*.log
+
+# Ignore build files
+bin/
+build/
+.gradle/
+target/
+out/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

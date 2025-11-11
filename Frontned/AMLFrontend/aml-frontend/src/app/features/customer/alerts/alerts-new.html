@@ -1,0 +1,366 @@
+<div class="alerts-page">
+  <div class="alerts-container">
+
+    <!-- Main Tabs -->
+    <div class="main-tabs">
+      <button class="main-tab" [class.active]="activeMainTab === 'alerts'" (click)="activeMainTab = 'alerts'">
+        Alerts ({{ alerts.length }})
+      </button>
+      <button class="main-tab" [class.active]="activeMainTab === 'tickets'" (click)="activeMainTab = 'tickets'">
+        Tickets ({{ tickets.length }})
+      </button>
+    </div>
+
+    <!-- Alerts Tab Content -->
+    <div *ngIf="activeMainTab === 'alerts'" class="tab-content">
+      
+      <!-- Alert Filters -->
+      <div class="filters-bar">
+        <button class="filter-btn" [class.active]="alertFilter === 'all'" (click)="alertFilter = 'all'">
+          All ({{ alerts.length }})
+        </button>
+        <button class="filter-btn" [class.active]="alertFilter === 'pending'" (click)="alertFilter = 'pending'">
+          Pending ({{ getPendingAlerts().length }})
+        </button>
+        <button class="filter-btn" [class.active]="alertFilter === 'investigating'" (click)="alertFilter = 'investigating'">
+          Investigating ({{ getInvestigatingAlerts().length }})
+        </button>
+        <button class="filter-btn" [class.active]="alertFilter === 'decided'" (click)="alertFilter = 'decided'">
+          Decided ({{ getDecidedAlerts().length }})
+        </button>
+      </div>
+
+      <!-- Alerts Table -->
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let alert of getFilteredAlerts()" class="table-row">
+              <td class="font-medium">{{ alert.transactionId }}</td>
+              <td>{{ getAlertTypeLabel(alert) }}</td>
+              <td class="font-semibold text-primary">{{ formatCurrency(alert.amount) }}</td>
+              <td>{{ formatDate(alert.date) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="{
+                  'status-pending': alert.status === 'PENDING' || alert.status === 'OPEN' || alert.status === 'NEW',
+                  'status-investigating': alert.status === 'INVESTIGATING' || alert.status === 'IN_PROGRESS',
+                  'status-decided': alert.status === 'RESOLVED' || alert.status === 'CLOSED' || alert.status.includes('POSITIVE')
+                }">
+                  {{ alert.status }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-action" (click)="viewDetails(alert)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="getFilteredAlerts().length === 0" class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p>No alerts found</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tickets Tab Content -->
+    <div *ngIf="activeMainTab === 'tickets'" class="tab-content">
+      
+      <!-- Ticket Filters -->
+      <div class="filters-bar">
+        <button class="filter-btn" [class.active]="ticketFilter === 'all'" (click)="setTicketFilter('all')">
+          All ({{ tickets.length }})
+        </button>
+        <button class="filter-btn" [class.active]="ticketFilter === 'OPEN'" (click)="setTicketFilter('OPEN')">
+          Open ({{ getTicketsByStatus('OPEN').length }})
+        </button>
+        <button class="filter-btn" [class.active]="ticketFilter === 'IN_PROGRESS'" (click)="setTicketFilter('IN_PROGRESS')">
+          In Progress ({{ getTicketsByStatus('IN_PROGRESS').length }})
+        </button>
+        <button class="filter-btn" [class.active]="ticketFilter === 'RESOLVED'" (click)="setTicketFilter('RESOLVED')">
+          Resolved ({{ getTicketsByStatus('RESOLVED').length }})
+        </button>
+        <button class="filter-btn" [class.active]="ticketFilter === 'CLOSED'" (click)="setTicketFilter('CLOSED')">
+          Closed ({{ getTicketsByStatus('CLOSED').length }})
+        </button>
+      </div>
+
+      <!-- Tickets Table -->
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Subject</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of getFilteredTickets()" class="table-row">
+              <td class="font-medium">#{{ ticket.ticketId }}</td>
+              <td>{{ ticket.subject }}</td>
+              <td>
+                <span class="priority-badge" [ngClass]="{
+                  'priority-urgent': ticket.priority === 'URGENT',
+                  'priority-high': ticket.priority === 'HIGH',
+                  'priority-medium': ticket.priority === 'MEDIUM',
+                  'priority-low': ticket.priority === 'LOW'
+                }">
+                  {{ ticket.priority }}
+                </span>
+              </td>
+              <td>
+                <span class="status-badge" [class]="getTicketStatusClass(ticket.status)">
+                  {{ ticket.status.replace('_', ' ') }}
+                </span>
+              </td>
+              <td>{{ formatDate(ticket.createdAt) }}</td>
+              <td>
+                <button class="btn-action" (click)="viewTicketDetails(ticket)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="getFilteredTickets().length === 0" class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <p>No tickets found</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Pending Alert Modal -->
+<div *ngIf="showPendingModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content modal-pending" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Pending Alert - Under Review</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedAlert">
+      <div class="detail-row">
+        <span class="detail-label">Transaction ID:</span>
+        <span class="detail-value">{{ selectedAlert.transactionId }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Amount:</span>
+        <span class="detail-value">{{ formatCurrency(selectedAlert.amount) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Date:</span>
+        <span class="detail-value">{{ formatDate(selectedAlert.date) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Status:</span>
+        <span class="detail-value">{{ selectedAlert.status }}</span>
+      </div>
+      <div class="detail-row full-width">
+        <span class="detail-label">Reason:</span>
+        <p class="detail-description">{{ selectedAlert.reason }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()">Close</button>
+      <button class="btn-primary" (click)="openContactModal(selectedAlert!); showPendingModal = false">Contact Support</button>
+    </div>
+  </div>
+</div>
+
+<!-- Investigating Alert Modal -->
+<div *ngIf="showInvestigatingModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content modal-investigating" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Investigation in Progress</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedAlert">
+      <div class="detail-row">
+        <span class="detail-label">Transaction ID:</span>
+        <span class="detail-value">{{ selectedAlert.transactionId }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Amount:</span>
+        <span class="detail-value">{{ formatCurrency(selectedAlert.amount) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Date:</span>
+        <span class="detail-value">{{ formatDate(selectedAlert.date) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Status:</span>
+        <span class="detail-value">{{ selectedAlert.status }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedAlert.assignedOfficer">
+        <span class="detail-label">Assigned Officer:</span>
+        <span class="detail-value">{{ selectedAlert.assignedOfficer }}</span>
+      </div>
+      <div class="detail-row full-width">
+        <span class="detail-label">Reason:</span>
+        <p class="detail-description">{{ selectedAlert.reason }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()">Close</button>
+      <button class="btn-primary" (click)="openContactModal(selectedAlert!); showInvestigatingModal = false">Contact Officer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Decision/Resolved Alert Modal -->
+<div *ngIf="showDecisionModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content modal-decision" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Alert Decision</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedAlert">
+      <div class="detail-row">
+        <span class="detail-label">Transaction ID:</span>
+        <span class="detail-value">{{ selectedAlert.transactionId }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Amount:</span>
+        <span class="detail-value">{{ formatCurrency(selectedAlert.amount) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Date:</span>
+        <span class="detail-value">{{ formatDate(selectedAlert.date) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Final Status:</span>
+        <span class="detail-value">{{ selectedAlert.status.replace('_', ' ') }}</span>
+      </div>
+      <div class="detail-row full-width">
+        <span class="detail-label">Reason:</span>
+        <p class="detail-description">{{ selectedAlert.reason }}</p>
+      </div>
+      <div class="detail-row full-width" *ngIf="selectedAlert.description">
+        <span class="detail-label">Resolution:</span>
+        <p class="detail-description">{{ selectedAlert.description }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" (click)="closeModals()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Support Modal -->
+<div *ngIf="showContactModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Contact Support</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedAlert">
+      <p class="modal-description">Send a message to our support team regarding this alert.</p>
+      <div class="alert-summary">
+        <strong>Transaction ID:</strong> {{ selectedAlert.transactionId }}<br>
+        <strong>Amount:</strong> {{ formatCurrency(selectedAlert.amount) }}
+      </div>
+      <div class="form-group">
+        <label for="contactMessage">Your Message *</label>
+        <textarea 
+          id="contactMessage"
+          [(ngModel)]="contactMessage"
+          placeholder="Please describe your concern or question..."
+          rows="5"
+          [disabled]="sendingMessage"
+          required>
+        </textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()" [disabled]="sendingMessage">Cancel</button>
+      <button class="btn-primary" (click)="contactSupport()" [disabled]="!contactMessage.trim() || sendingMessage">
+        {{ sendingMessage ? 'Sending...' : 'Send Message' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Details Modal -->
+<div *ngIf="showTicketDetailsModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Ticket Details</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedTicket">
+      <div class="detail-row">
+        <span class="detail-label">Ticket ID:</span>
+        <span class="detail-value">#{{ selectedTicket.ticketId }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Subject:</span>
+        <span class="detail-value">{{ selectedTicket.subject }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Status:</span>
+        <span class="status-badge" [class]="getTicketStatusClass(selectedTicket.status)">
+          {{ selectedTicket.status.replace('_', ' ') }}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Priority:</span>
+        <span class="priority-badge" [class]="getTicketPriorityClass(selectedTicket.priority)">
+          {{ selectedTicket.priority }}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Created:</span>
+        <span class="detail-value">{{ formatDate(selectedTicket.createdAt) }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedTicket.resolvedAt">
+        <span class="detail-label">Resolved:</span>
+        <span class="detail-value">{{ formatDate(selectedTicket.resolvedAt) }}</span>
+      </div>
+      <div class="detail-row full-width">
+        <span class="detail-label">Description:</span>
+        <div class="ticket-description-formatted" [innerHTML]="formatTicketDescription(selectedTicket.description)"></div>
+      </div>
+      <div class="detail-row full-width" *ngIf="selectedTicket.resolution">
+        <span class="detail-label">Resolution:</span>
+        <p class="detail-description">{{ selectedTicket.resolution }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" (click)="closeModals()">Close</button>
+    </div>
+  </div>
+</div>

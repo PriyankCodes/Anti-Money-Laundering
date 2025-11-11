@@ -1,0 +1,662 @@
+<div class="sar-container">
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="success-banner">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+      <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading SARs...</p>
+  </div>
+
+  <!-- SARs Table -->
+  <div *ngIf="!isLoading" class="sars-table-container">
+    <div class="table-header">
+      <h2>All SARs ({{ filteredSars.length }})</h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <div class="filter-grid">
+        <div class="search-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Search by SAR ID or Alert ID..."
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applyFilters()">
+        </div>
+
+        <select [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="all">All Status</option>
+          <option value="DRAFT">Draft</option>
+          <option value="SUBMITTED">Submitted</option>
+          <option value="PENDING">Pending</option>
+          <option value="ACKNOWLEDGED">Acknowledged</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="filteredSars.length === 0" class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <h3>No SARs found</h3>
+      <p>SARs will appear here once they are generated from alerts</p>
+    </div>
+
+    <table *ngIf="sars.length > 0" class="sars-table">
+      <thead>
+        <tr>
+          <th>SAR ID</th>
+          <th>Alert ID</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Submitted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sar of paginatedSars">
+          <td><span class="sar-id">#{{ sar.sarId }}</span></td>
+          <td><span class="alert-id">#{{ sar.alertId }}</span></td>
+            <td>
+            <span class="status-badge" [class]="getStatusClass(sar.status)">
+              {{ sar.status }}
+            </span>
+          </td>
+          <td>{{ sar.createdAt | date:'short' }}</td>
+          <td>
+            <span *ngIf="sar.submittedAt">{{ sar.submittedAt | date:'short' }}</span>
+            <span *ngIf="!sar.submittedAt" class="text-muted">Not submitted</span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button 
+                class="btn-view"
+                (click)="viewSARDetails(sar)"
+                title="View Details">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                View
+              </button>
+              <button 
+                *ngIf="sar.status === 'SUBMITTED'"
+                class="btn-download"
+                (click)="downloadSARPDFFromTable(sar)"
+                title="Download PDF">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/>
+                </svg>
+                Download
+              </button>
+              <button 
+                *ngIf="sar.status === 'DRAFT'"
+                class="btn-submit"
+                (click)="submitSARToRegulator(sar.sarId)"
+                title="Submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="9 11 12 14 22 4"/>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Submit
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination Controls -->
+    <div *ngIf="sars.length > 0" class="pagination-container">
+      <div class="pagination-info">
+        Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, sars.length) }} of {{ sars.length }} entries
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === 1"
+            (click)="goToPage(1)"
+            title="First">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="11 17 6 12 11 7"/>
+              <polyline points="18 17 13 12 18 7"/>
+            </svg>
+          </button>
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === 1"
+            (click)="previousPage()"
+            title="Previous">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+
+          <button 
+            *ngFor="let page of getPageNumbers()"
+            class="pagination-number"
+            [class.active]="page === currentPage"
+            [class.ellipsis]="page === -1"
+            [disabled]="page === -1"
+            (click)="page !== -1 && goToPage(page)">
+            {{ page === -1 ? '...' : page }}
+          </button>
+
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === totalPages"
+            (click)="nextPage()"
+            title="Next">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(totalPages)"
+            title="Last">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="13 17 18 12 13 7"/>
+              <polyline points="6 17 11 12 6 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="pagination-size">
+          <label>Show:</label>
+          <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()" class="page-size-select">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SAR Form Modal -->
+<div class="modal-overlay" *ngIf="showSarForm" (click)="closeSarForm()">
+  <div class="modal-content sar-form-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <h2>Generate SAR for Alert #{{ selectedAlertId }}</h2>
+      </div>
+      <button class="close-button" (click)="closeSarForm()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body sar-form-body" *ngIf="selectedAlert">
+      
+      <!-- 1. Customer Details -->
+      <div class="sar-form-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          1. Customer Details
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item">
+            <span class="info-display-label">Customer Name</span>
+            <span class="info-display-value">{{ sarData.subjectName }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Customer ID</span>
+            <span class="info-display-value">{{ sarData.customerId }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Account Number</span>
+            <span class="info-display-value">{{ sarData.accountNumber }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">KYC Status</span>
+            <span class="info-display-value">
+              <span class="badge badge-success">{{ sarData.kycStatus }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Transaction Details -->
+      <div class="sar-form-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          2. Transaction Details
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item">
+            <span class="info-display-label">Transaction ID</span>
+            <span class="info-display-value">{{ sarData.transactionId }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Transaction Date</span>
+            <span class="info-display-value">{{ sarData.transactionDate }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Transaction Type</span>
+            <span class="info-display-value">{{ sarData.transactionType }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Amount</span>
+            <span class="info-display-value amount-value">{{ sarData.currency }} {{ sarData.amount | number:'1.2-2' }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Counterparty Name</span>
+            <span class="info-display-value">{{ sarData.counterpartyName }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Counterparty Account</span>
+            <span class="info-display-value">{{ sarData.counterpartyAccount }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Counterparty Country</span>
+            <span class="info-display-value">{{ sarData.counterpartyCountry }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Alert & Risk Information -->
+      <div class="sar-form-section alert-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          3. Alert & Risk Assessment
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item full-width">
+            <span class="info-display-label">Rules Triggered</span>
+            <span class="info-display-value rule-text">{{ sarData.ruleTriggered }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Risk Score</span>
+            <span class="info-display-value">
+              <span class="risk-badge" [class.high-risk]="sarData.riskScore >= 70">{{ sarData.riskScore }}/100</span>
+            </span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Alert Severity</span>
+            <span class="info-display-value">
+              <span class="severity-badge" [ngClass]="{
+                'severity-high': sarData.alertSeverity === 'High',
+                'severity-medium': sarData.alertSeverity === 'Medium',
+                'severity-low': sarData.alertSeverity === 'Low'
+              }">{{ sarData.alertSeverity }}</span>
+            </span>
+          </div>
+        </div>
+        <div class="rule-description-box">
+          <h4>Why This Was Flagged:</h4>
+          <p>{{ getRuleDescription(sarData.ruleTriggered) }}</p>
+        </div>
+      </div>
+
+      <!-- 4. Investigation Notes (Editable) -->
+      <div class="sar-form-section editable-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          4. Investigation Notes
+          <span class="required-badge">Required - Editable</span>
+        </h3>
+        <p class="help-text">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          Document your investigation findings, analysis, and conclusions about this suspicious activity.
+        </p>
+        <div class="form-group">
+          <textarea 
+            [(ngModel)]="sarData.investigationNotes"
+            class="form-control investigation-textarea"
+            rows="10"
+            placeholder="Enter your investigation findings here...
+
+Include:
+• Steps taken during investigation
+• Customer responses or explanations (if contacted)
+• Additional red flags or suspicious patterns discovered
+• Analysis of transaction behavior and patterns
+• Supporting evidence reviewed
+• Conclusion and recommendation"
+            required></textarea>
+          <div class="char-count">
+            {{ sarData.investigationNotes.length }} characters
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Officer Information (Read-Only) -->
+      <div class="sar-form-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <polyline points="17 11 19 13 23 9"/>
+          </svg>
+          5. Compliance Officer
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item">
+            <span class="info-display-label">Officer Name</span>
+            <span class="info-display-value">{{ sarData.officerName || 'Loading...' }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Officer ID</span>
+            <span class="info-display-value">{{ sarData.officerId || 'Loading...' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Officer Declaration -->
+      <div class="sar-form-section declaration-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 11 12 14 22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          Officer Declaration
+          <span class="required-badge">Required</span>
+        </h3>
+        <div class="declaration-box">
+          <p><strong>I hereby declare that:</strong></p>
+          <ul>
+            <li>The information provided in this SAR is accurate and complete to the best of my knowledge</li>
+            <li>I have conducted a thorough investigation of the suspicious activity</li>
+            <li>This report is filed in compliance with applicable AML regulations</li>
+            <li>I understand the confidentiality requirements of SAR filing</li>
+          </ul>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Officer Name: *</label>
+            <input type="text" [(ngModel)]="sarData.officerName" class="form-control readonly-field" readonly required>
+          </div>
+          <div class="form-group">
+            <label>Officer ID: *</label>
+            <input type="text" [(ngModel)]="sarData.officerId" class="form-control readonly-field" readonly required>
+          </div>
+        </div>
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="sarData.declaration" required>
+            <span>I confirm that I have read and agree to the above declaration *</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeSarForm()">Cancel</button>
+        <button 
+          class="btn-primary" 
+          (click)="submitSAR()"
+          [disabled]="!isFormValid()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Generate SAR Report
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SAR Detail Modal (Matching Generate SAR Style) -->
+<div class="modal-overlay" *ngIf="showSarDetail && selectedSarDetail" (click)="closeSarDetail()">
+  <div class="modal-content sar-form-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-content">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z"/>
+          <polyline points="14,2 14,8 20,8"/>
+        </svg>
+        <div>
+          <h2>Suspicious Activity Report</h2>
+          <p class="modal-subtitle">Report ID: {{ selectedSarDetail.reportId }} | {{ selectedSarDetail.dateTimeGenerated }}</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="status-badge" [class]="getStatusClass(selectedSarDetail.status)">
+          {{ selectedSarDetail.status }}
+        </span>
+        <button class="btn-icon" (click)="downloadSARPDF(selectedSarDetail)" title="Download PDF">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/>
+          </svg>
+        </button>
+      </div>
+      <button class="close-button" (click)="closeSarDetail()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body sar-form-body">
+      
+      <!-- 1. Customer Details -->
+      <div class="sar-form-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          1. Customer Details
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item">
+            <span class="info-display-label">Customer Name</span>
+            <span class="info-display-value">{{ selectedSarDetail.customerName }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Customer ID</span>
+            <span class="info-display-value">{{ selectedSarDetail.customerId }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Email</span>
+            <span class="info-display-value">{{ selectedSarDetail.customerEmail || 'N/A' }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Account Number</span>
+            <span class="info-display-value">{{ selectedSarDetail.accountNumbers }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">KYC Status</span>
+            <span class="info-display-value">
+              <span class="badge badge-success">{{ selectedSarDetail.kycStatus }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Transaction Details -->
+      <div class="sar-form-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          2. Transaction Details
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item">
+            <span class="info-display-label">Transaction ID</span>
+            <span class="info-display-value">{{ selectedSarDetail.transactionId }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Transaction Date</span>
+            <span class="info-display-value">{{ selectedSarDetail.transactionDateTime }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Type</span>
+            <span class="info-display-value">{{ selectedSarDetail.transactionType }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Amount</span>
+            <span class="info-display-value amount-value">{{ selectedSarDetail.currency }} {{ selectedSarDetail.amount | number:'1.2-2' }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Counterparty Name</span>
+            <span class="info-display-value">{{ selectedSarDetail.counterpartyName }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Counterparty Account</span>
+            <span class="info-display-value">{{ selectedSarDetail.counterpartyAccount || 'N/A' }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Counterparty Country</span>
+            <span class="info-display-value">{{ selectedSarDetail.counterpartyCountry }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Alert & Risk Information -->
+      <div class="sar-form-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          3. Alert & Risk Assessment
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item full-width">
+            <span class="info-display-label">Rules Triggered</span>
+            <span class="info-display-value">{{ selectedSarDetail.triggeredRule }}</span>
+          </div>
+          <div class="info-display-item full-width">
+            <span class="info-display-label">Alert Description</span>
+            <span class="info-display-value">{{ selectedSarDetail.suspicionDescription || getRuleDescription(selectedSarDetail.triggeredRule) }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Risk Score</span>
+            <span class="info-display-value">
+              <span class="risk-badge" [class.high-risk]="selectedSarDetail.customerRiskScore >= 70">{{ selectedSarDetail.customerRiskScore }}/100</span>
+            </span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Alert Severity</span>
+            <span class="info-display-value">
+              <span class="severity-badge" [ngClass]="{
+                'severity-high': selectedSarDetail.alertSeverity === 'High',
+                'severity-medium': selectedSarDetail.alertSeverity === 'Medium',
+                'severity-low': selectedSarDetail.alertSeverity === 'Low'
+              }">{{ selectedSarDetail.alertSeverity }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Compliance Officer Details -->
+      <div class="sar-form-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <polyline points="17 11 19 13 23 9"/>
+          </svg>
+          4. Compliance Officer
+          <span class="auto-badge">Auto-Populated</span>
+        </h3>
+        <div class="info-display-grid">
+          <div class="info-display-item">
+            <span class="info-display-label">Officer Name</span>
+            <span class="info-display-value">{{ selectedSarDetail.reviewedBy || 'N/A' }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Officer ID</span>
+            <span class="info-display-value">OFF{{ selectedSarDetail.rawSAR.officerId || 'N/A' }}</span>
+          </div>
+          <div class="info-display-item">
+            <span class="info-display-label">Review Date</span>
+            <span class="info-display-value">{{ selectedSarDetail.dateTimeGenerated }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Investigation Notes (Editable) -->
+      <div class="sar-form-section editable-section">
+        <h3 class="form-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          5. Investigation Notes
+          <span *ngIf="selectedSarDetail.status !== 'SUBMITTED'" class="required-badge">Editable</span>
+          <span *ngIf="selectedSarDetail.status === 'SUBMITTED'" class="auto-badge">Locked</span>
+        </h3>
+        <div class="form-group">
+          <textarea 
+            *ngIf="selectedSarDetail.status !== 'SUBMITTED'"
+            [(ngModel)]="selectedSarDetail.investigationNotes"
+            class="form-control investigation-textarea"
+            rows="10"
+            placeholder="Enter investigation findings..."
+          ></textarea>
+          <div *ngIf="selectedSarDetail.status === 'SUBMITTED'" class="notes-readonly formatted-summary">
+            <div class="summary-content" [innerHTML]="formatSummaryForDisplay(selectedSarDetail.investigationNotes)"></div>
+          </div>
+        </div>
+        <div *ngIf="selectedSarDetail.status !== 'SUBMITTED'" class="form-actions">
+          <button class="btn-secondary" (click)="closeSarDetail()">Cancel</button>
+          <button class="btn-primary" (click)="saveInvestigationNotes()">Save Notes</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

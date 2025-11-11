@@ -1,0 +1,325 @@
+<!-- Page Header -->
+
+
+    <!-- Content -->
+    <div class="content-wrapper">
+      <!-- Filters Section -->
+      <div class="filters-section">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Search User</label>
+            <input 
+              type="text" 
+              class="filter-input"
+              placeholder="Username or User ID..."
+              [(ngModel)]="filters.userSearch"
+              (ngModelChange)="onFilterChange()">
+          </div>
+
+          <div class="filter-group">
+            <label>Action</label>
+            <select class="filter-select" [(ngModel)]="filters.action" (ngModelChange)="onFilterChange()">
+              <option value="ALL">All Actions</option>
+              <option *ngFor="let action of actions" [value]="action">{{getActionDisplay(action)}}</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Resource Type</label>
+            <select class="filter-select" [(ngModel)]="filters.resourceType" (ngModelChange)="onFilterChange()">
+              <option value="ALL">All Resources</option>
+              <option *ngFor="let type of resourceTypes" [value]="type">{{getResourceTypeDisplay(type)}}</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Status</label>
+            <select class="filter-select" [(ngModel)]="filters.status" (ngModelChange)="onFilterChange()">
+              <option value="ALL">All Status</option>
+              <option *ngFor="let status of statuses" [value]="status">{{getStatusDisplay(status)}}</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Date From</label>
+            <input 
+              type="date" 
+              class="filter-input"
+              [(ngModel)]="filters.dateFrom"
+              [max]="getTodayDate()"
+              (ngModelChange)="onDateChange(); onFilterChange()">
+          </div>
+
+          <div class="filter-group">
+            <label>Date To</label>
+            <input 
+              type="date" 
+              class="filter-input"
+              [(ngModel)]="filters.dateTo"
+              [max]="getTodayDate()"
+              (ngModelChange)="onDateChange(); onFilterChange()">
+          </div>
+        </div>
+        
+        <div *ngIf="dateError" class="error-message" style="color: #dc3545; margin: 10px 0; font-size: 14px; padding: 10px; background: #f8d7da; border-radius: 4px;">
+          {{ dateError }}
+        </div>
+        
+        <div class="filter-actions">
+          <button class="sort-btn" (click)="toggleSortOrder()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path *ngIf="filters.sortOrder === 'desc'" d="M12 5V19M12 19L19 12M12 19L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path *ngIf="filters.sortOrder === 'asc'" d="M12 19V5M12 5L5 12M12 5L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{filters.sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}}
+          </button>
+          <button class="clear-filters-btn" (click)="clearFilters()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Audit Logs Table -->
+      <div class="audit-table-container">
+        <div class="table-header">
+          <h3 class="table-title">Audit Logs ({{filteredLogs.length}})</h3>
+        </div>
+        
+        <div class="table-wrapper" *ngIf="!loading; else loadingTemplate">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Time</th>
+                <th>Action</th>
+                <th>Resource</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of getPaginatedLogs(); trackBy: trackByLogId">
+                <td class="user-col">
+                  <div class="user-info">
+                    <span class="username">{{log.username || 'N/A'}}</span>
+                    <span class="user-id" *ngIf="log.userId">ID: {{log.userId}}</span>
+                  </div>
+                </td>
+                <td class="time-col">
+                  <div class="time-info">
+                    <span class="date">{{formatDate(log.timestamp)}}</span>
+                    <span class="time">{{formatTime(log.timestamp)}}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="action-badge" [ngClass]="getActionClass(log.action)">
+                    {{getActionDisplay(log.action)}}
+                  </span>
+                </td>
+                <td>
+                  <div class="resource-info">
+                    <span class="resource-type">{{getResourceTypeDisplay(log.resourceType)}}</span>
+                    <span class="resource-id" *ngIf="log.resourceId">ID: {{log.resourceId}}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusClass(log.status)">
+                    {{getStatusDisplay(log.status)}}
+                  </span>
+                </td>
+                <td class="actions-col">
+                  <button 
+                    class="action-link view-btn"
+                    (click)="openDetailsModal(log)"
+                    title="View Details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+            
+          <div class="empty-state" *ngIf="filteredLogs.length === 0">
+            <div class="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15" stroke="#9CA3AF" stroke-width="2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1" stroke="#9CA3AF" stroke-width="2"/>
+              </svg>
+            </div>
+            <h3 class="empty-title">No audit logs found</h3>
+            <p class="empty-message">No audit logs match your current filters. Try adjusting your search criteria.</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" *ngIf="filteredLogs.length > 0">
+          <div class="pagination-info">
+            Showing {{ getStartIndex() + 1 }} to {{ getEndIndex() }} of {{ filteredLogs.length }} entries
+          </div>
+          <div class="pagination-controls">
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === 1" 
+              (click)="goToPage(1)"
+              title="First page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M18 17L13 12L18 7M11 17L6 12L11 7" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === 1" 
+              (click)="previousPage()"
+              title="Previous page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+            
+            <div class="pagination-pages">
+              <button 
+                *ngFor="let page of getPageNumbers()" 
+                class="pagination-page" 
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)">
+                {{ page }}
+              </button>
+            </div>
+            
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === getTotalPages()" 
+              (click)="nextPage()"
+              title="Next page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+            <button 
+              class="pagination-btn" 
+              [disabled]="currentPage === getTotalPages()" 
+              (click)="goToPage(getTotalPages())"
+              title="Last page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M6 17L11 12L6 7M13 17L18 12L13 7" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="pagination-size">
+            <label for="pageSize">Show:</label>
+            <select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+              <option [value]="50">50</option>
+              <option [value]="100">100</option>
+            </select>
+          </div>
+        </div>
+
+        <ng-template #loadingTemplate>
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading audit logs...</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Audit Log Details Modal -->
+    <div class="modal-overlay" *ngIf="detailsModal.isOpen" (click)="closeDetailsModal()">
+      <div class="modal-container modal-large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">Audit Log Details</h3>
+          <button class="modal-close-btn" (click)="closeDetailsModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" *ngIf="detailsModal.log">
+          <!-- Log Information -->
+          <div class="details-section">
+            <h4 class="section-subtitle">Log Information</h4>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-label">Log ID:</span>
+                <span class="detail-value">#{{detailsModal.log.logId}}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Timestamp:</span>
+                <span class="detail-value">{{formatDateTime(detailsModal.log.timestamp)}}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Action:</span>
+                <span class="action-badge" [ngClass]="getActionClass(detailsModal.log.action)">
+                  {{getActionDisplay(detailsModal.log.action)}}
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status:</span>
+                <span class="status-badge" [ngClass]="getStatusClass(detailsModal.log.status)">
+                  {{getStatusDisplay(detailsModal.log.status)}}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Information -->
+          <div class="details-section">
+            <h4 class="section-subtitle">User Information</h4>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-label">User ID:</span>
+                <span class="detail-value">{{detailsModal.log.userId || 'N/A'}}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Username:</span>
+                <span class="detail-value">{{detailsModal.log.username || 'N/A'}}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">IP Address:</span>
+                <span class="detail-value">{{detailsModal.log.ipAddress}}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">User Agent:</span>
+                <span class="detail-value">{{detailsModal.log.userAgent || 'N/A'}}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resource Information -->
+          <div class="details-section">
+            <h4 class="section-subtitle">Resource Information</h4>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-label">Resource Type:</span>
+                <span class="detail-value">{{getResourceTypeDisplay(detailsModal.log.resourceType)}}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Resource ID:</span>
+                <span class="detail-value">{{detailsModal.log.resourceId || 'N/A'}}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="details-section">
+            <h4 class="section-subtitle">Details</h4>
+            <div class="details-box">
+              {{detailsModal.log.details}}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDetailsModal()">Close</button>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,276 @@
+<div class="dashboard-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" stroke="#007AFF" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <div class="logo-content">
+          <span class="logo-title">AML Customer</span>
+          <span class="logo-subtitle">Portal</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-section-title">CUSTOMER NAVIGATION</span>
+        
+        <a href="#" class="nav-item active" (click)="setActiveTab('dashboard')">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          Customer Dashboard
+        </a>
+
+        <a href="#" class="nav-item" (click)="setActiveTab('accounts')">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          My Accounts
+        </a>
+
+        <a href="#" class="nav-item" (click)="setActiveTab('kyc')">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          KYC Upload
+        </a>
+
+        <a href="#" class="nav-item" (click)="setActiveTab('transactions')">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2V22M17 5H9.5C7.01472 5 5 7.01472 5 9.5C5 11.9853 7.01472 14 9.5 14H14.5C16.9853 14 19 16.0147 19 18.5C19 20.9853 16.9853 23 14.5 23H6" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Transactions
+        </a>
+
+        <a href="#" class="nav-item" (click)="setActiveTab('alerts')">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M13.73 21C13.5542 21.3031 13.3018 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Alerts & Notifications
+        </a>
+
+        <a href="#" class="nav-item" (click)="setActiveTab('reports')">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          Statements & Reports
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="page-title">Customer Dashboard</h1>
+      </div>
+      <div class="header-right">
+        <div class="search-bar">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+            <path d="M21 21L16.65 16.65" stroke="#9CA3AF" stroke-width="2"/>
+          </svg>
+          <input type="text" placeholder="Search" class="search-input">
+          <kbd class="search-shortcut">⌘</kbd>
+        </div>
+        <div class="user-menu">
+          <button class="user-btn" (click)="toggleUserMenu()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            Profile
+          </button>
+          <button class="logout-btn" (click)="logout()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2"/>
+              <polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="2"/>
+              <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-section">
+        <div class="loading-spinner"></div>
+        <p>Loading dashboard data...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage && !isLoading" class="error-message" style="background: #fee; color: #c53030; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #fecaca;">
+        {{ errorMessage }}
+        <button (click)="refreshDashboard()" class="refresh-btn">Try Again</button>
+      </div>
+
+      <!-- Welcome Section -->
+      <div class="welcome-section" *ngIf="!isLoading">
+        <div class="welcome-header">
+          <div>
+            <h2 class="welcome-title">Welcome, {{ getUserDisplayName() }}!</h2>
+            <p class="welcome-subtitle" *ngIf="customerProfile">
+              Overview of your recent financial activity. Last login: {{ formatDate(customerProfile.lastLogin) }}.
+            </p>
+            <p class="welcome-subtitle" *ngIf="!customerProfile">
+              Loading your account information...
+            </p>
+          </div>
+          <button (click)="loadApiData()" class="api-test-btn" title="Refresh Data">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M20.49 9C19.9828 7.58885 19.1209 6.35872 17.9845 5.41604C16.8482 4.47337 15.4745 3.85313 14.0069 3.61947C12.5392 3.38581 11.0299 3.54842 9.63415 4.08906C8.23841 4.62971 7.00966 5.53026 6.08 6.68" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M3.51 15C4.01719 16.4111 4.87906 17.6413 6.01547 18.584C7.15189 19.5266 8.52547 20.1469 9.99307 20.3805C11.4607 20.6142 12.97 20.4516 14.3658 19.9109C15.7616 19.3703 16.9903 18.4697 17.92 17.32" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid" *ngIf="!isLoading">
+        <div class="stat-card transactions-card">
+          <div class="stat-icon-wrapper green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Total Transactions</span>
+            <div class="stat-value">{{ dashboardData.totalTransactions }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card activity-card">
+          <div class="stat-icon-wrapper blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10" stroke-width="2"/>
+              <polyline points="12,6 12,12 16,14" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Last Login</span>
+            <div class="stat-value">{{ formatDate(dashboardData.lastLogin) || 'N/A' }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card accounts-card">
+          <div class="stat-icon-wrapper purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="1" y="4" width="22" height="16" rx="2" stroke-width="2"/>
+              <line x1="1" y1="10" x2="23" y2="10" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Total Accounts</span>
+            <div class="stat-value">{{ dashboardData.totalAccounts || 0 }}</div>
+          </div>
+        </div>
+
+        <div class="stat-card alerts-card">
+          <div class="stat-icon-wrapper orange">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-width="2"/>
+              <line x1="12" y1="9" x2="12" y2="13" stroke-width="2"/>
+              <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">New Alerts</span>
+            <div class="stat-value">{{ dashboardData.newAlerts }}</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Data Tables Section -->
+      <div class="tables-section" *ngIf="!isLoading">
+        <!-- Recent Transactions Table -->
+        <div class="table-container">
+          <h3 class="table-title">Recent Transactions</h3>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <tbody>
+                <tr class="table-row" *ngFor="let transaction of recentTransactions">
+                  <td class="transaction-name">{{ transaction.description || '-' }}</td>
+                  <td class="transaction-type">{{ transaction.type }} • {{ formatDate(transaction.date) }}</td>
+                  <td class="transaction-amount">{{ formatCurrency(transaction.amount, transaction.currency) }}</td>
+                  <td class="transaction-status" [ngClass]="getStatusClass(transaction.status)">{{ transaction.status }}</td>
+                </tr>
+                <tr *ngIf="recentTransactions.length === 0">
+                  <td colspan="4" class="no-data">No recent transactions found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Alerts Table -->
+        <div class="table-container">
+          <h3 class="table-title">Recent Alerts</h3>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <tbody>
+                <tr class="table-row" *ngFor="let alert of recentAlerts">
+                  <td class="alert-description">{{ alert.description }}</td>
+                  <td class="alert-date">{{ formatDate(alert.date) }}</td>
+                  <td class="alert-risk" [ngClass]="getRiskClass(alert.riskScore)">
+                    Risk: {{ alert.riskScore }}<br>
+                    <span class="risk-status" [ngClass]="getStatusClass(alert.status)">{{ alert.status }}</span>
+                  </td>
+                </tr>
+                <tr *ngIf="recentAlerts.length === 0">
+                  <td colspan="3" class="no-data">No recent alerts found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Information Section -->
+      <div class="account-info-section" *ngIf="!isLoading && customerProfile">
+        <h3 class="account-info-title">Account Information</h3>
+        <div class="account-info-grid">
+          <div class="info-item">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">{{ customerProfile.firstName }} {{ customerProfile.lastName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ customerProfile.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Phone Number</span>
+            <span class="info-value">{{ customerProfile.phoneNumber }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Address</span>
+            <span class="info-value">{{ customerProfile.address.line1 }}, {{ customerProfile.address.city }}, {{ customerProfile.address.state }} - {{ customerProfile.address.postalCode }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Last Login</span>
+            <span class="info-value">{{ formatDate(customerProfile.lastLogin) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

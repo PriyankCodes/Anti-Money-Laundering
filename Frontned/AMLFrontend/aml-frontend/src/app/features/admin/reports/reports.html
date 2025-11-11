@@ -1,0 +1,201 @@
+<div class="reports-container">
+  <!-- Header Section -->
+  <div class="reports-header">
+    <div class="header-content">
+      <h1 class="page-title">Reports & Analysis</h1>
+      <p class="page-subtitle">Comprehensive AML compliance reporting and analytics</p>
+    </div>
+    
+    <div class="header-actions">
+      <div class="filter-group">
+        <label>Period:</label>
+        <select [(ngModel)]="selectedPeriod" (change)="onPeriodChange()" class="select-input">
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+          <option value="90days">Last 90 Days</option>
+          <option value="6months">Last 6 Months</option>
+          <option value="1year">Last Year</option>
+        </select>
+      </div>
+      
+      <div class="export-buttons">
+        <button class="btn-export" (click)="exportReport('pdf')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Export PDF
+        </button>
+        <button class="btn-export" (click)="exportReport('excel')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Export Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading report data...</p>
+  </div>
+
+  <!-- Statistics Cards - First Row (4 Total Transaction Stats) -->
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card">
+      <div class="stat-icon transactions">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{ stats.totalTransactions | number }}</h3>
+        <p class="stat-label">Total Transactions</p>
+        <div class="stat-detail">
+          <span class="stat-badge flagged">{{ stats.flaggedTransactions }} Flagged</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon alerts">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{ stats.totalAlerts }}</h3>
+        <p class="stat-label">Total Alerts</p>
+        <div class="stat-detail">
+          <span class="stat-badge pending">{{ stats.pendingAlerts }} Pending</span>
+          <span class="stat-badge resolved">{{ stats.resolvedAlerts }} Resolved</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon sars">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{ stats.totalSARs }}</h3>
+        <p class="stat-label">SARs Generated</p>
+        <div class="stat-detail">
+          <span class="stat-badge submitted">{{ stats.submittedSARs }} Submitted</span>
+          <span class="stat-badge drafted">{{ stats.draftedSARs }} Drafted</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon risk">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{ stats.highRiskCustomers }}</h3>
+        <p class="stat-label">High Risk Customers</p>
+        <div class="stat-detail">
+          <span class="stat-badge risk">Avg Score: {{ stats.averageRiskScore }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section" *ngIf="!loading">
+    <div class="chart-row">
+      <!-- Alerts by Type -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Alerts by Type</h3>
+          <span class="chart-subtitle">Distribution of alert categories</span>
+        </div>
+        <div class="chart-body">
+          <div class="bar-chart">
+            <div *ngFor="let label of alertsByType.labels; let i = index" class="bar-item">
+              <div class="bar-label">{{ label }}</div>
+              <div class="bar-container">
+                <div class="bar-fill" [style.width.%]="getPercentage(alertsByType.values[i], stats.totalAlerts)">
+                  <span class="bar-value">{{ alertsByType.values[i] }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts by Status -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Alerts by Status</h3>
+          <span class="chart-subtitle">Current alert status breakdown</span>
+        </div>
+        <div class="chart-body">
+          <div class="donut-chart">
+            <div class="donut-legend">
+              <div *ngFor="let label of alertsByStatus.labels; let i = index" class="legend-item">
+                <span class="legend-color" [style.background]="['#3b82f6', '#f59e0b', '#10b981', '#6b7280'][i]"></span>
+                <span class="legend-label">{{ label }}</span>
+                <span class="legend-value">{{ alertsByStatus.values[i] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- Key Insights -->
+  <div class="insights-section" *ngIf="!loading">
+    <h2>Key Insights</h2>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-icon success">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2"/>
+            <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3>{{ getPercentage(stats.resolvedAlerts, stats.totalAlerts) }}%</h3>
+        <p>Alert Resolution Rate</p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-icon warning">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 9v4M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3>{{ getPercentage(stats.flaggedTransactions, stats.totalTransactions) }}%</h3>
+        <p>Transaction Flag Rate</p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-icon info">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3>{{ getPercentage(stats.submittedSARs, stats.totalSARs) }}%</h3>
+        <p>SAR Submission Rate</p>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-icon danger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3>{{ stats.averageRiskScore }}</h3>
+        <p>Average Risk Score</p>
+      </div>
+    </div>
+  </div>
+</div>

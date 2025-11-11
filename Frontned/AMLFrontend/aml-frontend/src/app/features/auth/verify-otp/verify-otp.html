@@ -1,0 +1,67 @@
+<div class="verification-container">
+    <div class="verification-card">
+        <header class="verification-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" stroke="#007AFF" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <span class="logo-text">FinTrace</span>
+            </div>
+        </header>
+
+        <div class="verification-content">
+            <div class="verification-title-section">
+                <h1 class="verification-title">Create Your Account</h1>
+                <p class="verification-subtitle">Join FinTrace to enhance financial security and streamline compliance.</p>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="error-message" style="background: #fee; color: #c53030; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #fecaca;">
+                {{ errorMessage }}
+            </div>
+
+            <!-- Success Message -->
+            <div *ngIf="successMessage" class="success-message" style="background: #f0fff4; color: #22543d; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #9ae6b4;">
+                {{ successMessage }}
+            </div>
+
+            <form class="verification-form" (ngSubmit)="onVerify()">
+                <div class="form-group email-display">
+                    <label class="form-label">Email Address</label>
+                    <div class="email-field">
+                        <span class="email-text">{{userEmail || 'email@example.com'}}</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="verificationCode" class="form-label">Enter Verification Code</label>
+                    <input 
+                        type="text" 
+                        id="verificationCode" 
+                        name="verificationCode" 
+                        class="form-input verification-input" 
+                        placeholder="Enter 6-digit code"
+                        [(ngModel)]="verificationCode"
+                        maxlength="6"
+                        required>
+                </div>
+
+                <div class="resend-section">
+                    <span class="resend-text">Didn't receive the code? </span>
+                    <button type="button" class="resend-btn" (click)="resendCode()">Resend</button>
+                </div>
+
+                <button type="submit" class="complete-btn" [disabled]="isLoading || !verificationCode || verificationCode.length < 6">
+                    <span *ngIf="isLoading">Verifying...</span>
+                    <span *ngIf="!isLoading">Complete Registration</span>
+                </button>
+            </form>
+
+            <div class="verification-footer">
+                <p class="login-link">Already have an account? <a routerLink="/auth/login" class="link">Log in</a></p>
+            </div>
+        </div>
+    </div>
+</div>

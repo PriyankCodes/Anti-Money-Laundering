@@ -1,0 +1,394 @@
+
+    <!-- Keywords Content -->
+    <div class="keywords-content">
+      <!-- Statistics Cards -->
+      <div class="stats-section">
+        <div class="stats-card">
+          <div class="stats-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="stats-content">
+            <div class="stats-number">{{ totalKeywords }}</div>
+            <div class="stats-label">Total Keywords</div>
+          </div>
+        </div>
+        
+        <div class="stats-card active">
+          <div class="stats-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </div>
+          <div class="stats-content">
+            <div class="stats-number">{{ activeKeywords }}</div>
+            <div class="stats-label">Active Keywords</div>
+          </div>
+        </div>
+        
+        <div class="stats-card inactive">
+          <div class="stats-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="stats-content">
+            <div class="stats-number">{{ inactiveKeywords }}</div>
+            <div class="stats-label">Inactive Keywords</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keywords Section -->
+      <div class="keywords-section">
+        <!-- Keywords Header -->
+        <div class="keywords-header">
+          <h2 class="section-title">Keywords</h2>
+          <div class="header-actions-row">
+            <div class="search-keywords">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="8" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+                <path d="M21 21L16.65 16.65" stroke="#9CA3AF" stroke-width="2"/>
+              </svg>
+              <input type="text" placeholder="Search keywords" class="search-keywords-input" [(ngModel)]="searchTerm" (input)="onSearchChange()">
+            </div>
+            <button class="new-keyword-btn" (click)="openAddModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-width="2"/>
+                <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              New Keyword
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+          <div class="filter-group">
+            <label for="categoryFilter">Category:</label>
+            <select id="categoryFilter" [(ngModel)]="categoryFilter" (change)="onFilterChange()">
+              <option value="all">All Categories</option>
+              <option *ngFor="let category of categories" [value]="category.value">{{ category.label }}</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="statusFilter">Status:</label>
+            <select id="statusFilter" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Keywords Table -->
+        <div class="keywords-table-container">
+          <div class="table-wrapper">
+            <table class="keywords-table">
+              <thead>
+                <tr>
+                  <th>Keyword</th>
+                  <th>Category</th>
+                  <th class="table-header">Severity</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loading" class="table-row">
+                  <td colspan="5" class="text-center">Loading keywords...</td>
+                </tr>
+                <tr *ngIf="!loading && filteredKeywords.length === 0" class="table-row">
+                  <td colspan="5" class="text-center">No keywords found</td>
+                </tr>
+                <tr *ngFor="let keyword of getPaginatedKeywords()" class="table-row">
+                  <td class="keyword-text">{{ keyword.keyword }}</td>
+                  <td class="keyword-category">
+                    <span [class]="getCategoryBadgeClass(keyword.category)">{{ getCategoryLabel(keyword.category) }}</span>
+                  </td>
+                  <td class="keyword-risk">
+                    <span [class]="getSeverityBadgeClass(keyword.severity)">{{ getSeverityLabel(keyword.severity) }}</span>
+                  </td>
+                  <td class="keyword-status">
+                    <span class="status-badge" [class.active]="keyword.isActive" [class.inactive]="!keyword.isActive">
+                      {{ keyword.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="keyword-actions">
+                    <div class="action-buttons">
+                      <button class="action-btn view-btn" (click)="openViewModal(keyword)" title="View Details">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                      </button>
+                      <button class="action-btn edit-btn" (click)="openEditModal(keyword)" title="Edit Keyword">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                      </button>
+                      <button class="action-btn toggle-btn" (click)="toggleKeywordStatus(keyword)" [title]="keyword.isActive ? 'Deactivate Keyword' : 'Activate Keyword'">
+                        <svg *ngIf="!keyword.isActive" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="2"/>
+                          <polyline points="15 3 21 3 21 9" stroke="currentColor" stroke-width="2"/>
+                          <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <svg *ngIf="keyword.isActive" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"/>
+                          <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <app-pagination
+            [currentPage]="currentPage"
+            [pageSize]="pageSize"
+            [totalItems]="filteredKeywords.length"
+            (pageChange)="goToPage($event)"
+            (pageSizeChange)="pageSize = $event; onPageSizeChange()">
+          </app-pagination>
+        </div>
+      </div>
+    </div>
+ 
+<!-- Add Keyword Modal -->
+<div *ngIf="showAddModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add New Keyword</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="createKeyword()" #addForm="ngForm">
+        <div class="form-group">
+          <label for="keyword">Keyword *</label>
+          <input 
+            type="text" 
+            id="keyword" 
+            [(ngModel)]="newKeyword.keyword" 
+            name="keyword"
+            placeholder="e.g., terrorism, money laundering"
+            [class.error]="formErrors.keyword"
+            required>
+          <div *ngIf="formErrors.keyword" class="error-message">{{ formErrors.keyword }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="category">Category *</label>
+          <select 
+            id="category" 
+            [(ngModel)]="newKeyword.category" 
+            name="category"
+            [class.error]="formErrors.category"
+            required>
+            <option *ngFor="let category of categories" [value]="category.value">{{ category.label }}</option>
+          </select>
+          <div *ngIf="formErrors.category" class="error-message">{{ formErrors.category }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="severity">Severity (1-100) *</label>
+          <input 
+            type="number" 
+            id="severity" 
+            [(ngModel)]="newKeyword.severity" 
+            name="severity"
+            min="1"
+            max="100"
+            placeholder="Enter severity level (1-100)"
+            [class.error]="formErrors.severity"
+            required>
+          <div *ngIf="formErrors.severity" class="error-message">{{ formErrors.severity }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea 
+            id="description" 
+            [(ngModel)]="newKeyword.description" 
+            name="description"
+            placeholder="Optional description of the keyword"
+            rows="3">
+          </textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Creating...' : 'Create Keyword' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Keyword Modal -->
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit Keyword</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="updateKeyword()" #editForm="ngForm">
+        <div class="form-group">
+          <label for="editKeyword">Keyword *</label>
+          <input 
+            type="text" 
+            id="editKeyword" 
+            [(ngModel)]="editKeyword.keyword" 
+            name="editKeyword"
+            [class.error]="formErrors.keyword"
+            required>
+          <div *ngIf="formErrors.keyword" class="error-message">{{ formErrors.keyword }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="editCategory">Category *</label>
+          <select 
+            id="editCategory" 
+            [(ngModel)]="editKeyword.category" 
+            name="editCategory"
+            [class.error]="formErrors.category"
+            required>
+            <option *ngFor="let category of categories" [value]="category.value">{{ category.label }}</option>
+          </select>
+          <div *ngIf="formErrors.category" class="error-message">{{ formErrors.category }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="editSeverity">Severity (1-100) *</label>
+          <input 
+            type="number" 
+            id="editSeverity" 
+            [(ngModel)]="editKeyword.severity" 
+            name="editSeverity"
+            min="1"
+            max="100"
+            placeholder="Enter severity level (1-100)"
+            [class.error]="formErrors.severity"
+            required>
+          <div *ngIf="formErrors.severity" class="error-message">{{ formErrors.severity }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="editDescription">Description</label>
+          <textarea 
+            id="editDescription" 
+            [(ngModel)]="editKeyword.description" 
+            name="editDescription"
+            rows="3">
+          </textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="statusToggle">Status</label>
+          <div class="toggle-switch">
+            <input 
+              type="checkbox" 
+              id="statusToggle"
+              [(ngModel)]="editKeyword.isActive" 
+              name="editIsActive"
+              class="toggle-input">
+            <label for="statusToggle" class="toggle-label">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">{{ editKeyword.isActive ? 'Active' : 'Inactive' }}</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Updating...' : 'Update Keyword' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Keyword Modal -->
+<div *ngIf="showViewModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Keyword Details</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="details-grid" *ngIf="selectedKeyword">
+        <div class="detail-item">
+          <label>Keyword:</label>
+          <span>{{ selectedKeyword.keyword }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Category:</label>
+          <span [class]="getCategoryBadgeClass(selectedKeyword.category)">{{ getCategoryLabel(selectedKeyword.category) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Severity Level:</label>
+          <span [class]="getSeverityBadgeClass(selectedKeyword.severity)">{{ getSeverityLabel(selectedKeyword.severity) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Status:</label>
+          <span class="status-badge" [class.active]="selectedKeyword.isActive" [class.inactive]="!selectedKeyword.isActive">
+            {{ selectedKeyword.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="detail-item" *ngIf="selectedKeyword.description">
+          <label>Description:</label>
+          <span>{{ selectedKeyword.description }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedKeyword.createdAt">
+          <label>Created:</label>
+          <span>{{ selectedKeyword.createdAt | date:'medium' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedKeyword.updatedAt">
+          <label>Last Updated:</label>
+          <span>{{ selectedKeyword.updatedAt | date:'medium' }}</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModals()">Close</button>
+        <button type="button" class="btn-primary" (click)="openEditFromView(selectedKeyword!)">Edit Keyword</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Keyword Modal -->
+<div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Delete Keyword</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-confirmation" *ngIf="selectedKeyword">
+        <p>Are you sure you want to delete the following keyword?</p>
+        <div class="keyword-info">
+          <strong>{{ selectedKeyword.keyword }}</strong>
+          <span [class]="getCategoryBadgeClass(selectedKeyword.category)">{{ getCategoryLabel(selectedKeyword.category) }}</span>
+          <span [class]="getSeverityBadgeClass(selectedKeyword.severity)">{{ getSeverityLabel(selectedKeyword.severity) }}</span>
+        </div>
+        <p class="warning-text">This action cannot be undone.</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn-danger" (click)="deleteKeyword()" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Deleting...' : 'Delete Keyword' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

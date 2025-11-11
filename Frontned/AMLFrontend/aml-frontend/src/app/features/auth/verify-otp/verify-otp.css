@@ -1,0 +1,326 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+/* Verification Container */
+.verification-container {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.verification-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0;
+}
+
+/* Header */
+.verification-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: #e0f2fe;
+    border-radius: 8px;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #007AFF;
+}
+
+/* Verification Content */
+.verification-title-section {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.verification-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.verification-subtitle {
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+/* Form Styles */
+.verification-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+/* Email Display Field */
+.email-display {
+    margin-bottom: 1rem;
+}
+
+.email-field {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    font-size: 0.875rem;
+}
+
+.email-text {
+    color: #6b7280;
+    font-weight: 400;
+}
+
+/* Verification Code Input */
+.verification-input {
+    padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    background-color: white;
+    transition: all 0.2s ease;
+    text-align: center;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+}
+
+.verification-input:focus {
+    outline: none;
+    border-color: #007AFF;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.verification-input::placeholder {
+    color: #9ca3af;
+    letter-spacing: normal;
+    font-weight: 400;
+}
+
+/* Resend Section */
+.resend-section {
+    text-align: center;
+    margin: 0.5rem 0 1rem 0;
+}
+
+.resend-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.resend-btn {
+    background: none;
+    border: none;
+    color: #007AFF;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0;
+    font-family: inherit;
+}
+
+.resend-btn:hover {
+    text-decoration: underline;
+}
+
+/* Complete Button */
+.complete-btn {
+    width: 100%;
+    padding: 1rem 2rem;
+    background-color: #007AFF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.complete-btn:hover:not(:disabled) {
+    background-color: #0056cc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.complete-btn:active {
+    transform: translateY(0);
+}
+
+.complete-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Verification Footer */
+.verification-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.login-link {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.link {
+    color: #007AFF;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .verification-container {
+        padding: 1rem 0.5rem;
+    }
+    
+    .verification-card {
+        padding: 2rem 1.5rem;
+        margin: 0 0.5rem;
+    }
+    
+    .verification-title {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+    
+    .verification-card {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+    
+    .verification-title {
+        font-size: 1.5rem;
+    }
+    
+    .verification-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .verification-input {
+        font-size: 0.875rem;
+        padding: 0.875rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .verification-card {
+        padding: 1.25rem;
+    }
+    
+    .verification-title {
+        font-size: 1.25rem;
+    }
+}
+
+/* Focus Management */
+.verification-input:focus-visible,
+.complete-btn:focus-visible,
+.resend-btn:focus-visible {
+    outline: 2px solid #007AFF;
+    outline-offset: 2px;
+}
+
+/* Loading State */
+.complete-btn.loading {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.complete-btn.loading:hover {
+    background-color: #9ca3af;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Animation */
+.verification-card {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Code Input Enhancement */
+.verification-input:valid {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+.verification-input[maxlength="6"] {
+    font-size: 1.25rem;
+    font-family: 'Courier New', monospace;
+}

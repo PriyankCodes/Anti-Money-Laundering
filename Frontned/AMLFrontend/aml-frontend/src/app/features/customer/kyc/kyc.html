@@ -1,0 +1,337 @@
+<div class="kyc-container">
+  <!-- Header Section -->
+  <div class="kyc-header">
+    <div class="header-content">
+      <h1 class="page-title">KYC Documents</h1>
+      <p class="page-subtitle">Manage your Know Your Customer documentation</p>
+    </div>
+    <button class="btn-upload" (click)="openUploadModal()" [disabled]="isLoading">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Upload Document
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading KYC information...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+      <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"/>
+      <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <div [innerHTML]="errorMessage"></div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.7088 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4905 2.02168 11.3363C2.16356 9.18203 2.99721 7.13214 4.39828 5.49883C5.79935 3.86553 7.69279 2.72636 9.79619 2.24223C11.8996 1.75809 14.1003 1.95185 16.07 2.79999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    {{ successMessage }}
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="kyc-content">
+    <!-- KYC Status Overview -->
+    <div *ngIf="kycStatus" class="status-overview">
+      <div class="status-card">
+        <div class="status-header">
+          <h2>KYC Status Overview</h2>
+          <span class="overall-status" [ngClass]="kycStatus.kycComplete ? 'status-complete' : 'status-incomplete'">
+            {{ kycStatus.overallKycStatus }}
+          </span>
+        </div>
+        
+        <div class="progress-section">
+          <div class="progress-info">
+            <span class="progress-label">Verification Progress</span>
+            <span class="progress-percentage">{{ getProgressPercentage() }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
+          </div>
+        </div>
+
+        <div class="status-stats">
+          <div class="stat-item">
+            <div class="stat-number">{{ kycStatus.totalDocuments }}</div>
+            <div class="stat-label">Total Documents</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number verified">{{ kycStatus.verifiedDocuments }}</div>
+            <div class="stat-label">Verified</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number pending">{{ kycStatus.pendingDocuments }}</div>
+            <div class="stat-label">Pending</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number rejected">{{ kycStatus.rejectedDocuments }}</div>
+            <div class="stat-label">Rejected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Missing Documents Alert -->
+      <div *ngIf="getMissingDocuments().length > 0" class="missing-documents-alert">
+        <div class="alert-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M10.29 3.86L1.82 18C1.64486 18.3024 1.55625 18.6453 1.56518 18.9928C1.57411 19.3402 1.68043 19.6781 1.87086 19.9715C2.06129 20.2649 2.32954 20.5019 2.64634 20.6588C2.96314 20.8157 3.31646 20.8874 3.67 20.87H20.33C20.6835 20.8874 21.0369 20.8157 21.3537 20.6588C21.6705 20.5019 21.9387 20.2649 22.1291 19.9715C22.3196 19.6781 22.4259 19.3402 22.4348 18.9928C22.4437 18.6453 22.3551 18.3024 22.18 18L13.71 3.86C13.5317 3.56611 13.2807 3.32312 12.9812 3.15448C12.6817 2.98585 12.3438 2.89725 12 2.89725C11.6562 2.89725 11.3183 2.98585 11.0188 3.15448C10.7193 3.32312 10.4683 3.56611 10.29 3.86V3.86Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3>Required Documents Missing</h3>
+        </div>
+        <p>Please upload the following required documents to complete your KYC verification:</p>
+        <ul class="missing-docs-list">
+          <li *ngFor="let docType of getMissingDocuments()">
+            {{ getDocumentTypeDisplay(docType) }}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          placeholder="Search documents..."
+          class="search-input">
+      </div>
+
+      <select 
+        [(ngModel)]="selectedStatus"
+        (ngModelChange)="applyFilters()"
+        class="filter-select">
+        <option value="All">All Status</option>
+        <option *ngFor="let status of statusOptions" [value]="status">
+          {{ getStatusDisplay(status) }}
+        </option>
+      </select>
+
+      <select 
+        [(ngModel)]="selectedDocumentType"
+        (ngModelChange)="applyFilters()"
+        class="filter-select">
+        <option value="All">All Types</option>
+        <option *ngFor="let type of documentTypes" [value]="type">
+          {{ getDocumentTypeDisplay(type) }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Documents Table -->
+    <div class="table-container">
+      <table class="documents-table">
+        <thead>
+          <tr>
+            <th>Document Type</th>
+            <th>File Name</th>
+            <th>Upload Date</th>
+            <th>Status</th>
+            <th>View Document</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let document of filteredDocuments" class="document-row">
+            <td class="document-type">
+              <div class="type-info">
+                <span class="type-name">{{ getDocumentTypeDisplay(document.documentType) }}</span>
+                <span *ngIf="isDocumentRequired(document.documentType)" class="required-badge">Required</span>
+              </div>
+            </td>
+            <td class="file-name">{{ document.fileName }}</td>
+            <td class="upload-date">{{ formatDate(document.uploadTimestamp) }}</td>
+            <td class="status">
+              <span class="status-badge" [ngClass]="getStatusClass(document.status)">
+                {{ getStatusDisplay(document.status) }}
+              </span>
+            </td>
+            <td class="view-document">
+              <button class="view-doc-btn" (click)="openDocument(document.filePath)" title="View Uploaded Document">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 13H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 9H9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                View File
+              </button>
+            </td>
+            <td class="actions">
+              <button class="view-btn" (click)="viewDocument(document.id)" title="View Details">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredDocuments.length === 0" class="no-documents">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 2V8H20" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h3>No Documents Found</h3>
+        <p>{{ searchTerm || selectedStatus !== 'All' || selectedDocumentType !== 'All' ? 'No documents match your current filters.' : 'You haven\'t uploaded any documents yet.' }}</p>
+        <button *ngIf="!searchTerm && selectedStatus === 'All' && selectedDocumentType === 'All'" 
+                class="btn-upload-empty" 
+                (click)="openUploadModal()">
+          Upload Your First Document
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div *ngIf="showUploadModal" class="modal-overlay" (click)="closeUploadModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Upload Document</h2>
+        <button class="close-btn" (click)="closeUploadModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="documentType">Document Type *</label>
+          <select id="documentType" [(ngModel)]="uploadForm.documentType" class="form-select">
+            <option *ngFor="let type of documentTypes" [value]="type">
+              {{ getDocumentTypeDisplay(type) }}
+              <span *ngIf="isDocumentRequired(type)"> </span>
+            </option>
+          </select>
+        </div>
+
+       
+
+        <div class="form-group">
+          <label for="fileUpload">Select File *</label>
+          <div class="file-upload-area">
+            <input 
+              type="file" 
+              id="fileUpload"
+              (change)="onFileSelected($event)"
+              accept=".jpg,.jpeg,.png,.pdf"
+              class="file-input">
+            <div class="file-upload-content">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <p *ngIf="!uploadForm.file" class="upload-text">
+                <strong>Click to upload</strong> or drag and drop<br>
+                <small>JPEG, PNG, PDF (Max 10MB)</small>
+              </p>
+              <p *ngIf="uploadForm.file" class="file-selected">
+                <strong>{{ uploadForm.file.name }}</strong><br>
+                <small>{{ formatFileSize(uploadForm.file.size || 0) }}</small>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeUploadModal()" [disabled]="isUploading">
+          Cancel
+        </button>
+        <button class="btn-upload-modal" 
+                (click)="uploadDocument()" 
+                [disabled]="!uploadForm.file || isUploading">
+          <span *ngIf="isUploading" class="loading-spinner-small"></span>
+          {{ isUploading ? 'Uploading...' : 'Upload Document' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Details Modal -->
+  <div *ngIf="showDocumentModal && selectedDocument" class="modal-overlay" (click)="closeDocumentModal()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Document Details</h2>
+        <button class="close-btn" (click)="closeDocumentModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="document-details">
+          <div class="detail-row">
+            <span class="detail-label">Document Type</span>
+            <span class="detail-value">{{ getDocumentTypeDisplay(selectedDocument.documentType!) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">File Name</span>
+            <span class="detail-value">{{ selectedDocument.fileName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">File Size</span>
+            <span class="detail-value">{{ formatFileSize(selectedDocument.fileSize || 0) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedDocument?.documentNumber">
+            <span class="detail-label">Document Number</span>
+            <span class="detail-value">{{ selectedDocument.documentNumber }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Upload Date</span>
+            <span class="detail-value">{{ formatDate(selectedDocument.uploadTimestamp!) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span class="status-badge" [ngClass]="getStatusClass(selectedDocument.status!)">
+              {{ getStatusDisplay(selectedDocument.status!) }}
+            </span>
+          </div>
+          <div class="detail-row" *ngIf="selectedDocument?.verificationTimestamp">
+            <span class="detail-label">Verification Date</span>
+            <span class="detail-value">{{ formatDate(selectedDocument.verificationTimestamp!) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedDocument?.verifiedByName">
+            <span class="detail-label">Verified By</span>
+            <span class="detail-value">{{ selectedDocument.verifiedByName }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedDocument?.verificationNotes">
+            <span class="detail-label">Verification Notes</span>
+            <span class="detail-value notes">{{ selectedDocument.verificationNotes }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

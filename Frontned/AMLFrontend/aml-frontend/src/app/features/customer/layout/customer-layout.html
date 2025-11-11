@@ -1,0 +1,186 @@
+<div class="customer-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="customer-sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" stroke="#007AFF" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <span class="logo-text">Customer Portal</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-section-title">CUSTOMER NAVIGATION</span>
+        
+        <a routerLink="/customer/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-item">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          Dashboard
+        </a>
+
+        <a routerLink="/customer/accounts" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-item">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          My Accounts
+        </a>
+
+        <a routerLink="/customer/transactions" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-item">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2V22M17 5H9.5C7.01472 5 5 7.01472 5 9.5C5 11.9853 7.01472 14 9.5 14H14.5C16.9853 14 19 16.0147 19 18.5C19 20.9853 16.9853 23 14.5 23H6" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Transactions
+        </a>
+
+        <a routerLink="/customer/alerts" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-item">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M13.73 21C13.5542 21.3031 13.3018 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Alerts & Tickets
+        </a>
+
+        <a routerLink="/customer/kyc" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-item">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          KYC Documents
+        </a>
+
+        <a routerLink="/customer/profile" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-item">
+          <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          Profile
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2"/>
+          <polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="2"/>
+          <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Dynamic Content -->
+  <main class="main-content">
+    <!-- Common Top Bar -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <h1 class="page-title">{{ getPageTitle() }}</h1>
+      </div>
+      <div class="top-bar-right">
+     
+        <!-- User Profile Menu -->
+        <div class="user-profile-wrapper">
+          <button class="user-profile-btn" (click)="toggleUserMenu()">
+            <div class="user-avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <span class="user-name">{{ getUserName() }}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" class="dropdown-icon">
+              <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+
+          <!-- User Menu Dropdown -->
+          <div class="user-menu-dropdown" *ngIf="showUserMenu">
+            <button class="menu-item" (click)="openChangePasswordModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              Change Password
+            </button>
+            <button class="menu-item logout-item" (click)="logout()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2"/>
+                <polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="2"/>
+                <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Change Password Modal -->
+    <div class="modal-overlay" *ngIf="showChangePasswordModal" (click)="closeChangePasswordModal()">
+      <div class="modal-content change-password-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Change Password</h3>
+          <button class="close-btn" (click)="closeChangePasswordModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="changePassword()">
+            <div class="form-group">
+              <label for="currentPassword">Current Password</label>
+              <input 
+                type="password" 
+                id="currentPassword" 
+                [(ngModel)]="passwordData.currentPassword"
+                name="currentPassword"
+                placeholder="Enter current password"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input 
+                type="password" 
+                id="newPassword" 
+                [(ngModel)]="passwordData.newPassword"
+                name="newPassword"
+                placeholder="Enter new password"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input 
+                type="password" 
+                id="confirmPassword" 
+                [(ngModel)]="passwordData.confirmPassword"
+                name="confirmPassword"
+                placeholder="Confirm new password"
+                required>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeChangePasswordModal()">Cancel</button>
+              <button type="submit" class="btn-primary">Change Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+  <!-- Toast Notifications -->
+  <app-toast></app-toast>
+  
+  <!-- Confirmation Dialog -->
+  <app-confirmation-dialog></app-confirmation-dialog>
+</div>

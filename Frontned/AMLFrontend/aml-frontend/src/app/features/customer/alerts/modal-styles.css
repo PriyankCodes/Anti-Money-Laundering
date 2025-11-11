@@ -1,0 +1,269 @@
+/* Professional Modal Styles for Different Alert States */
+
+/* Modal Title Group */
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+/* Status Banners */
+.status-banner {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pending-banner {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.investigating-banner {
+  background: #dbeafe;
+  border-left: 4px solid #3b82f6;
+  color: #1e40af;
+}
+
+.decision-banner {
+  background: #d1fae5;
+  border-left: 4px solid #10b981;
+  color: #065f46;
+}
+
+.decision-banner.true-positive {
+  background: #fee2e2;
+  border-left-color: #ef4444;
+  color: #991b1b;
+}
+
+.decision-banner.false-positive {
+  background: #d1fae5;
+  border-left-color: #10b981;
+  color: #065f46;
+}
+
+/* Detail Sections */
+.detail-section {
+  margin-bottom: 24px;
+}
+
+.section-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detail-value {
+  font-size: 15px;
+  color: #111827;
+  font-weight: 500;
+}
+
+.amount-highlight {
+  color: #007AFF;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Reason and Resolution Boxes */
+.reason-box,
+.resolution-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.reason-box p,
+.resolution-box p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* Info Boxes */
+.info-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.info-box strong {
+  display: block;
+  color: #1e40af;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.info-box p {
+  margin: 0;
+  color: #1e3a8a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.investigating-info {
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.investigating-info strong {
+  color: #92400e;
+}
+
+.investigating-info p {
+  color: #78350f;
+}
+
+.decision-info {
+  background: #d1fae5;
+  border-color: #a7f3d0;
+}
+
+.decision-info strong {
+  color: #065f46;
+}
+
+.decision-info p {
+  color: #064e3b;
+}
+
+/* Officer Info */
+.officer-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f3f4f6;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.officer-icon {
+  font-size: 20px;
+}
+
+/* Modal Specific Styling */
+.modal-pending .modal-header {
+  border-bottom-color: #f59e0b;
+}
+
+.modal-investigating .modal-header {
+  border-bottom-color: #3b82f6;
+}
+
+.modal-decision .modal-header {
+  border-bottom-color: #10b981;
+}
+
+/* Severity Badges in Modals */
+.severity-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.severity-badge.high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.severity-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.severity-badge.low {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Status Badges in Modals */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.true_positive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.false_positive {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.resolved,
+.status-badge.completed,
+.status-badge.closed {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* Button Enhancements */
+.modal-footer .btn-primary span {
+  margin-right: 6px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-icon {
+    font-size: 24px;
+  }
+
+  .modal-title-group h3 {
+    font-size: 18px;
+  }
+
+  .amount-highlight {
+    font-size: 16px;
+  }
+}

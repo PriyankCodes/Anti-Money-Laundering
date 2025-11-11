@@ -1,0 +1,600 @@
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-section">
+  <div class="loading-spinner"></div>
+  <p>Loading transactions...</p>
+</div>
+
+<!-- Main Content -->
+<div *ngIf="!isLoading" class="transactions-container">
+ 
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    {{ successMessage }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div [innerHTML]="errorMessage"></div>
+    <button (click)="errorMessage = ''" class="close-error-btn">×</button>
+  </div>
+
+
+  <!-- Transaction Forms Section -->
+  <div class="transaction-forms-section">
+    <div class="forms-header">
+      <h3 class="forms-title">Transaction Services</h3>
+      <div class="transaction-tabs">
+        <button class="tab-btn" [class.active]="activeFormTab === 'transfer'" (click)="setFormTab('transfer')">
+          Transfer Money
+        </button>
+        <button class="tab-btn" [class.active]="activeFormTab === 'deposit'" (click)="setFormTab('deposit')">
+          Make Deposit
+        </button>
+        <button class="tab-btn" [class.active]="activeFormTab === 'withdrawal'" (click)="setFormTab('withdrawal')">
+          Withdraw Money
+        </button>
+      </div>
+    </div>
+
+    <!-- Transfer Form -->
+    <div *ngIf="activeFormTab === 'transfer'" class="form-content">
+      <div class="form-header">
+        <h4 class="form-title">Transfer Money</h4>
+        <p class="form-subtitle">Send money to another account.</p>
+      </div>
+
+      <form (ngSubmit)="submitTransaction()" #transactionFormRef="ngForm">
+        <div class="form-grid">
+          <!-- Sender Account -->
+          <div class="form-group">
+            <label for="senderAccount">From Account</label>
+            <select 
+              id="senderAccount" 
+              [(ngModel)]="transactionForm.senderAccountNumber" 
+              name="senderAccount" 
+              required
+              class="form-select">
+              <option *ngFor="let account of accounts" [value]="account.accountNumber">
+                {{ account.accountNumber }} - {{ account.accountType }} ({{ account.currency }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Amount -->
+          <div class="form-group">
+            <label for="amount">Amount</label>
+            <input 
+              type="number" 
+              id="amount" 
+              [(ngModel)]="transactionForm.amount" 
+              name="amount" 
+              placeholder="500.00"
+              min="0.01"
+              step="0.01"
+              required
+              class="form-input">
+          </div>
+
+          <!-- Receiver Account Number -->
+          <div class="form-group">
+            <label for="receiverAccount">To Account Number</label>
+            <input 
+              type="text" 
+              id="receiverAccount" 
+              [(ngModel)]="transactionForm.receiverAccountNumber" 
+              name="receiverAccount" 
+              placeholder="9876543210"
+              required
+              class="form-input">
+          </div>
+
+          <!-- Description (Optional) - Full Width -->
+          <div class="form-group form-group-full">
+            <label for="description">Description (Optional)</label>
+            <input 
+              type="text" 
+              id="description" 
+              [(ngModel)]="transactionForm.description" 
+              name="description" 
+              placeholder="Monthly subscription payment"
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="isSubmitting || !transactionFormRef.form.valid">
+            <svg *ngIf="isSubmitting" class="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              <path d="M12 2A10 10 0 0 1 22 12" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ isSubmitting ? 'Processing...' : 'Send Money' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Deposit Form -->
+    <div *ngIf="activeFormTab === 'deposit'" class="form-content">
+      <div class="form-header">
+        <h4 class="form-title">Make Deposit</h4>
+        <p class="form-subtitle">Add money to your account.</p>
+      </div>
+
+      <form (ngSubmit)="submitDeposit()" #depositFormRef="ngForm">
+        <div class="form-grid">
+          <!-- Target Account -->
+          <div class="form-group">
+            <label for="depositAccount">Deposit to Account</label>
+            <select 
+              id="depositAccount" 
+              [(ngModel)]="depositForm.accountNumber" 
+              name="depositAccount" 
+              required
+              class="form-select">
+              <option *ngFor="let account of accounts" [value]="account.accountNumber">
+                {{ account.accountNumber }} - {{ account.accountType }} ({{ account.currency }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Amount -->
+          <div class="form-group">
+            <label for="depositAmount">Amount</label>
+            <input 
+              type="number" 
+              id="depositAmount" 
+              [(ngModel)]="depositForm.amount" 
+              name="depositAmount" 
+              placeholder="1000.00"
+              min="0.01"
+              step="0.01"
+              required
+              class="form-input">
+          </div>
+
+          <!-- Source -->
+          <div class="form-group form-group-full">
+            <label for="depositSource">Remarks (Optional)</label>
+            <input 
+              type="text" 
+              id="depositSource" 
+              [(ngModel)]="depositForm.source" 
+              name="depositSource" 
+              placeholder="Salary, Business Income, etc."
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn btn-success"
+            [disabled]="isSubmitting || !depositFormRef.form.valid">
+            <svg *ngIf="isSubmitting" class="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              <path d="M12 2A10 10 0 0 1 22 12" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ isSubmitting ? 'Processing...' : 'Make Deposit' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Withdrawal Form -->
+    <div *ngIf="activeFormTab === 'withdrawal'" class="form-content">
+      <div class="form-header">
+        <h4 class="form-title">Withdraw Money</h4>
+        <p class="form-subtitle">Withdraw money from your account.</p>
+      </div>
+
+      <form (ngSubmit)="submitWithdrawal()" #withdrawalFormRef="ngForm">
+        <div class="form-grid">
+          <!-- Source Account -->
+          <div class="form-group">
+            <label for="withdrawalAccount">Withdraw from Account</label>
+            <select 
+              id="withdrawalAccount" 
+              [(ngModel)]="withdrawalForm.accountNumber" 
+              name="withdrawalAccount" 
+              required
+              class="form-select">
+              <option *ngFor="let account of accounts" [value]="account.accountNumber">
+                {{ account.accountNumber }} - {{ account.accountType }} ({{ account.currency }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Amount -->
+          <div class="form-group">
+            <label for="withdrawalAmount">Amount</label>
+            <input 
+              type="number" 
+              id="withdrawalAmount" 
+              [(ngModel)]="withdrawalForm.amount" 
+              name="withdrawalAmount" 
+              placeholder="500.00"
+              min="0.01"
+              step="0.01"
+              required
+              class="form-input">
+          </div>
+
+          <!-- Purpose -->
+          <div class="form-group form-group-full">
+            <label for="withdrawalPurpose">Remarks (Optional)</label>
+            <input 
+              type="text" 
+              id="withdrawalPurpose" 
+              [(ngModel)]="withdrawalForm.purpose" 
+              name="withdrawalPurpose" 
+              placeholder="ATM withdrawal, Personal expenses, etc."
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn btn-warning"
+            [disabled]="isSubmitting || !withdrawalFormRef.form.valid">
+            <svg *ngIf="isSubmitting" class="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              <path d="M12 2A10 10 0 0 1 22 12" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ isSubmitting ? 'Processing...' : 'Withdraw Money' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Transaction History Section -->
+  <div class="transaction-history-section">
+    <div class="history-header">
+      <div>
+        <h3 class="history-title">Transaction History</h3>
+        <p class="history-subtitle">View and manage your past transactions.</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <div class="search-box">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          placeholder="Search by account number, receiver, or description"
+          class="search-input">
+      </div>
+
+      <select 
+        [(ngModel)]="selectedTransactionType"
+        (ngModelChange)="applyFilters()"
+        class="filter-select">
+        <option value="All">All Types</option>
+        <option value="TRANSFER">Transfers</option>
+        <option value="CREDIT">Deposits</option>
+        <option value="DEBIT">Withdrawals</option>
+      </select>
+
+      <select 
+        [(ngModel)]="selectedStatus"
+        (ngModelChange)="applyFilters()"
+        class="filter-select">
+        <option value="All">All Status</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="PENDING">Pending</option>
+        <option value="BLOCKED">Failed</option>
+        <option value="FLAGGED">Flagged</option>
+      </select>
+
+      <button 
+        class="sort-btn"
+        (click)="toggleDateSort()"
+        title="Toggle Sort Order">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path *ngIf="selectedDateFilter === 'Date (Newest)'" d="M12 5v14M19 12l-7 7-7-7"/>
+          <path *ngIf="selectedDateFilter === 'Date (Oldest)'" d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+        {{ selectedDateFilter === 'Date (Newest)' ? 'Newest First' : 'Oldest First' }}
+      </button>
+
+      <button 
+        class="download-btn"
+        (click)="openDownloadModal()"
+        title="Download Transactions">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download PDF
+      </button>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="table-container">
+      <table class="transactions-table">
+        <thead>
+          <tr>
+            
+            <th>Sender Account</th>
+            <th>Counterparty</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>View</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of paginatedTransactions; let i = index" class="transaction-row">
+            
+            <td>
+              <div class="sender-info">
+                <div class="sender-name">{{ transaction.customerName || 'N/A' }}</div>
+                <div class="sender-account">{{ transaction.senderAccountNumber || 'N/A' }}</div>
+
+              </div>
+            </td>
+            <td>
+              <div class="counterparty-info">
+                <div class="counterparty-name">{{ transaction.counterpartyName || 'N/A' }}</div>
+                <div class="counterparty-account">{{ transaction.counterpartyAccount || 'N/A' }}</div>
+                <div *ngIf="transaction.countryCode" class="country-code">{{ transaction.countryCode }}</div>
+              </div>
+            </td>
+            <td class="amount">{{ formatCurrency(transaction.amount, transaction.currency) }}</td>
+            <td>
+              <span class="type-badge" [ngClass]="getTypeClass(transaction.transactionType || transaction.type || '')">
+                {{ transaction.transactionType || transaction.type || 'N/A' }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(transaction.status)">
+                {{ getStatusLabel(transaction.status) }}
+              </span>
+            </td>
+            <td class="date">{{ formatDate(transaction.timestamp || transaction.date || '') }}</td>
+            <td class="actions">
+              <button class="view-details-btn" (click)="viewTransactionDetails(transaction)" title="View Details">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredTransactions.length === 0" class="no-transactions">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2V22M17 5H9.5C7.01472 5 5 7.01472 5 9.5C5 11.9853 7.01472 14 9.5 14H14.5C16.9853 14 19 16.0147 19 18.5C19 20.9853 16.9853 23 14.5 23H6" stroke="#9CA3AF" stroke-width="2"/>
+        </svg>
+        <p>No transactions found matching your filters</p>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div *ngIf="filteredTransactions.length > 0" class="pagination-container">
+        <div class="pagination-info">
+          Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, filteredTransactions.length) }} of {{ filteredTransactions.length }} entries
+        </div>
+        
+        <div class="pagination-wrapper">
+          <div class="pagination-controls">
+            <!-- First Page -->
+            <button 
+              class="pagination-btn" 
+              (click)="goToPage(1)" 
+              [disabled]="currentPage === 1"
+              title="First Page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="11 17 6 12 11 7"/>
+                <polyline points="18 17 13 12 18 7"/>
+              </svg>
+            </button>
+            
+            <!-- Previous Page -->
+            <button 
+              class="pagination-btn" 
+              (click)="previousPage()" 
+              [disabled]="currentPage === 1"
+              title="Previous Page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            
+            <!-- Page Numbers -->
+            <button 
+              *ngFor="let page of getPageNumbers()" 
+              class="pagination-btn page-number" 
+              [class.active]="page === currentPage"
+              [class.ellipsis]="page === -1"
+              [disabled]="page === -1"
+              (click)="page !== -1 && goToPage(page)">
+              {{ page === -1 ? '...' : page }}
+            </button>
+            
+            <!-- Next Page -->
+            <button 
+              class="pagination-btn" 
+              (click)="nextPage()" 
+              [disabled]="currentPage === totalPages"
+              title="Next Page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+            
+            <!-- Last Page -->
+            <button 
+              class="pagination-btn" 
+              (click)="goToPage(totalPages)" 
+              [disabled]="currentPage === totalPages"
+              title="Last Page">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="13 17 18 12 13 7"/>
+                <polyline points="6 17 11 12 6 7"/>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Page Size Selector -->
+          <div class="page-size-selector">
+            <label>Show:</label>
+            <select [(ngModel)]="itemsPerPage" (ngModelChange)="onPageSizeChange()">
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+              <option [value]="50">50</option>
+              <option [value]="100">100</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div *ngIf="selectedTransaction" class="modal-overlay" (click)="closeDetails()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Transaction Details</h3>
+      <button class="close-btn" (click)="closeDetails()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="detail-row">
+        <span class="detail-label">Transaction ID</span>
+        <span class="detail-value">{{ selectedTransaction.transactionId || selectedTransaction.id || 'N/A' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Date</span>
+        <span class="detail-value">{{ formatDate(selectedTransaction.timestamp || selectedTransaction.date || '') }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Amount</span>
+        <span class="detail-value amount-highlight">{{ formatCurrency(selectedTransaction.amount, selectedTransaction.currency) }}</span>
+      </div>
+      <div class="detail-row" *ngIf="selectedTransaction.transactionType">
+        <span class="detail-label">Transaction Type</span>
+        <span class="detail-value">{{ getTransactionTypeDisplay(selectedTransaction.transactionType) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Sender Account</span>
+        <span class="detail-value">{{ getSenderAccount(selectedTransaction) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Receiver Account</span>
+        <span class="detail-value">{{ getReceiverAccount(selectedTransaction) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Receiver Name</span>
+        <span class="detail-value">{{ getReceiverName(selectedTransaction) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Country</span>
+        <span class="detail-value">{{ selectedTransaction.country || selectedTransaction.countryCode || 'N/A' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <span class="status-badge" [ngClass]="getStatusClass(selectedTransaction.status)">
+          {{ getStatusLabel(selectedTransaction.status) }}
+        </span>
+      </div>
+      <div class="detail-row" *ngIf="selectedTransaction.description">
+        <span class="detail-label">Description</span>
+        <span class="detail-value">{{ selectedTransaction.description }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Download Modal -->
+<div *ngIf="showDownloadModal" class="modal-overlay" (click)="closeDownloadModal()">
+  <div class="modal-content download-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Download Transactions</h3>
+      <button class="close-btn" (click)="closeDownloadModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <p class="modal-description">Select a date range to download transactions, or download all transactions.</p>
+      
+      <div class="date-range-section">
+        <div class="form-group">
+          <label for="startDate">Start Date (Optional)</label>
+          <input 
+            type="date" 
+            id="startDate" 
+            [(ngModel)]="downloadStartDate"
+            [max]="getTodayDate()"
+            (ngModelChange)="onDownloadDateChange()"
+            class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="endDate">End Date (Optional)</label>
+          <input 
+            type="date" 
+            id="endDate" 
+            [(ngModel)]="downloadEndDate"
+            [max]="getTodayDate()"
+            (ngModelChange)="onDownloadDateChange()"
+            class="form-input">
+        </div>
+      </div>
+      
+      <div *ngIf="downloadDateError" class="error-message" style="color: #dc3545; margin-bottom: 15px; font-size: 14px;">
+        {{ downloadDateError }}
+      </div>
+      
+      <div class="download-info">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>{{ getDownloadCount() }} transaction(s) will be downloaded</span>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDownloadModal()">Cancel</button>
+      <button class="btn-primary" (click)="downloadTransactionsPDF()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download PDF
+      </button>
+    </div>
+  </div>
+</div>

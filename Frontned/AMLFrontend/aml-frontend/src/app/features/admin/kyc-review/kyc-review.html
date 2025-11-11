@@ -1,0 +1,550 @@
+
+
+<!-- KYC Review Content -->
+<div class="kyc-review-content">
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'pending'"
+        (click)="switchTab('pending')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        Pending Review
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'all'"
+        (click)="switchTab('all')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+        All Documents
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>Search Customer</label>
+        <input 
+          type="text" 
+          class="filter-input"
+          placeholder="Name, email, or ID..."
+          [(ngModel)]="filterOptions.customerSearch"
+          (ngModelChange)="onFilterChange()">
+      </div>
+
+          <div class="filter-group">
+            <label>Document Type</label>
+            <select class="filter-select" [(ngModel)]="filterOptions.documentType" (ngModelChange)="onFilterChange()">
+              <option value="ALL">All Types</option>
+              <option *ngFor="let type of documentTypes" [value]="type">{{getDocumentTypeDisplay(type)}}</option>
+            </select>
+          </div>
+
+          <!-- Date Filter - Only for Pending Tab -->
+          <div class="filter-group" *ngIf="activeTab === 'pending'">
+            <label>Upload Date</label>
+            <input 
+              type="date" 
+              class="filter-input"
+              [(ngModel)]="filterOptions.uploadDate"
+              [max]="getTodayDate()"
+              (ngModelChange)="onDateChange(); onFilterChange()">
+          </div>
+
+          <!-- Status Filter - Only for All Documents Tab with 3 options -->
+          <div class="filter-group" *ngIf="activeTab === 'all'">
+            <label>Status</label>
+            <select class="filter-select" [(ngModel)]="filterOptions.status" (ngModelChange)="onFilterChange()">
+              <option value="ALL">All Status</option>
+              <option value="PENDING">Pending</option>
+              <option value="VERIFIED">Verified</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
+        </div>
+        
+        <div *ngIf="dateError" class="error-message" style="color: #dc3545; margin: 10px 0; font-size: 14px; padding: 10px; background: #f8d7da; border-radius: 4px;">
+          {{ dateError }}
+        </div>
+        
+        <div class="filter-actions">
+          <button class="clear-filters-btn" (click)="clearFilters()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Bulk Actions (Only for Pending Review Tab) -->
+      <div class="bulk-actions-bar" *ngIf="selectedDocuments.length > 0 && activeTab === 'pending'">
+        <div class="bulk-info">
+          <input 
+            type="checkbox" 
+            class="select-all-checkbox"
+            [checked]="selectedDocuments.length === filteredDocuments.length && filteredDocuments.length > 0"
+            (change)="selectAllDocuments()">
+          <span class="selected-count">{{selectedDocuments.length}} selected</span>
+        </div>
+        <div class="bulk-buttons">
+          <button class="bulk-btn approve-btn" (click)="openBulkActionModal('bulk-approve')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Bulk Approve
+          </button>
+          <button class="bulk-btn reject-btn" (click)="openBulkActionModal('bulk-reject')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Bulk Reject
+          </button>
+          <button class="bulk-btn clear-btn" (click)="selectedDocuments = []">Clear</button>
+        </div>
+      </div>
+
+      <!-- KYC Documents Table -->
+      <div class="kyc-table-container">
+        <div class="table-header">
+          <h3 class="table-title">Documents ({{filteredDocuments.length}})</h3>
+        </div>
+        
+        <div class="table-wrapper" *ngIf="!loading; else loadingTemplate">
+          <!-- Pending Review Tab Table -->
+          <table class="kyc-table" *ngIf="activeTab === 'pending'">
+            <thead>
+              <tr>
+                <th class="checkbox-col">
+                  <input 
+                    type="checkbox" 
+                    [checked]="selectedDocuments.length === filteredDocuments.length && filteredDocuments.length > 0"
+                    (change)="selectAllDocuments()">
+                </th>
+                <th>Customer Name</th>
+                <th>Type</th>
+                <th>Upload Time</th>
+                <th>Status</th>
+                <th>Document Link</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of getPaginatedDocuments(); trackBy: trackByDocId">
+                <td class="checkbox-col">
+                  <input 
+                    type="checkbox" 
+                    [checked]="selectedDocuments.includes(doc.id)"
+                    (change)="toggleDocumentSelection(doc.id)">
+                </td>
+                <td class="customer-info">
+                  <div class="customer-name">{{doc.customerName}}</div>
+                  <div class="customer-email">{{doc.email || 'N/A'}}</div>
+                </td>
+                <td>
+                  <span class="doc-type-badge">{{getDocumentTypeDisplay(doc.documentType)}}</span>
+                </td>
+                <td class="time-col">{{formatDate(doc.uploadTimestamp)}}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusClass(doc.status)">
+                    {{getStatusDisplay(doc.status)}}
+                  </span>
+                </td>
+                <td class="document-link-col">
+                  <button *ngIf="getDocumentUrl(doc)" class="doc-link-btn" (click)="openDocumentLink(getDocumentUrl(doc)!)" title="Open document">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    View
+                  </button>
+                  <span *ngIf="!getDocumentUrl(doc)" class="no-link">No link</span>
+                </td>
+                <td class="actions-col">
+                  <button 
+                    class="action-link view-doc-btn"
+                    (click)="openDocumentDetailsModal(doc)"
+                    title="View Details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                  <button 
+                    class="action-link approve-link"
+                    (click)="openActionModal('approve', doc.id)"
+                    [disabled]="!canPerformAction(doc, 'verify')"
+                    title="Approve">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+              
+                  </button>
+                  <button 
+                    class="action-link reject-link"
+                    (click)="openActionModal('reject', doc.id)"
+                    [disabled]="!canPerformAction(doc, 'reject')"
+                    title="Reject">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+                      <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- All Documents Tab Table -->
+          <table class="kyc-table" *ngIf="activeTab === 'all'">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Type</th>
+                <th>Upload Time</th>
+                <th>Status</th>
+                <th>Verified Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of getPaginatedDocuments(); trackBy: trackByDocId">
+                <td class="customer-info">
+                  <div class="customer-name">{{doc.customerName}}</div>
+                  <div class="customer-email">{{doc.email || 'N/A'}}</div>
+                </td>
+                <td>
+                  <span class="doc-type-badge">{{getDocumentTypeDisplay(doc.documentType)}}</span>
+                </td>
+                <td class="time-col">{{formatDate(doc.uploadTimestamp)}}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusClass(doc.status)">
+                    {{getStatusDisplay(doc.status)}}
+                  </span>
+                </td>
+                <td class="time-col">{{doc.verificationTimestamp ? formatDate(doc.verificationTimestamp) : '-'}}</td>
+                <td class="actions-col">
+                  <button 
+                    class="action-link view-doc-btn"
+                    (click)="openDocumentDetailsModal(doc)"
+                    title="View Details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    View
+                  </button>
+                  <button 
+                    *ngIf="getDocumentUrl(doc)"
+                    class="action-link doc-file-link"
+                    (click)="openDocumentLink(getDocumentUrl(doc)!)"
+                    title="View Document File">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+              
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+            
+            <div class="empty-state" *ngIf="filteredDocuments.length === 0">
+              <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                  <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+                  <path d="M14 2V8H20" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <h3 class="empty-title">No documents found</h3>
+              <p class="empty-message">No KYC documents match your current filters. Try adjusting your search criteria.</p>
+            </div>
+            
+            <app-pagination
+              *ngIf="filteredDocuments.length > 0"
+              [currentPage]="currentPage"
+              [pageSize]="pageSize"
+              [totalItems]="filteredDocuments.length"
+              (pageChange)="onPageChange($event)"
+              (pageSizeChange)="onPageSizeChange($event)">
+            </app-pagination>
+          </div>
+          
+        <ng-template #loadingTemplate>
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading KYC documents...</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Action Modal (Approve/Reject) -->
+    <div class="modal-overlay" *ngIf="actionModal.isOpen" (click)="closeActionModal()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <span *ngIf="actionModal.action === 'approve'">Approve Document</span>
+            <span *ngIf="actionModal.action === 'reject'">Reject Document</span>
+            <span *ngIf="actionModal.action === 'bulk-approve'">Bulk Approve Documents</span>
+            <span *ngIf="actionModal.action === 'bulk-reject'">Bulk Reject Documents</span>
+          </h3>
+          <button class="modal-close-btn" (click)="closeActionModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="actionNotes">Notes <span *ngIf="actionModal.action === 'reject' || actionModal.action === 'bulk-reject'" class="required">*</span></label>
+            <textarea 
+              id="actionNotes"
+              class="form-textarea"
+              [(ngModel)]="actionModal.notes"
+              rows="4"
+              [placeholder]="(actionModal.action === 'reject' || actionModal.action === 'bulk-reject') ? 'Please provide reason for rejection (required)' : 'Add optional notes for this action'"></textarea>
+            <small class="form-help" *ngIf="actionModal.action === 'reject' || actionModal.action === 'bulk-reject'">
+              Notes are required for rejection to maintain audit trail.
+            </small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeActionModal()">Cancel</button>
+          <button 
+            class="btn" 
+            [ngClass]="{'btn-success': actionModal.action === 'approve' || actionModal.action === 'bulk-approve', 'btn-danger': actionModal.action === 'reject' || actionModal.action === 'bulk-reject'}"
+            (click)="executeAction()">
+            <span *ngIf="actionModal.action === 'approve'">Approve</span>
+            <span *ngIf="actionModal.action === 'reject'">Reject</span>
+            <span *ngIf="actionModal.action === 'bulk-approve'">Approve All</span>
+            <span *ngIf="actionModal.action === 'bulk-reject'">Reject All</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Document Details Modal -->
+    <div class="modal-overlay" *ngIf="documentDetailsModal.isOpen" (click)="closeDocumentDetailsModal()">
+      <div class="modal-container modal-large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">Document Details</h3>
+          <button class="modal-close-btn" (click)="closeDocumentDetailsModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" *ngIf="documentDetailsModal.document">
+          
+          <!-- FOR PENDING TAB: Document Info First, then Customer Info -->
+          <ng-container *ngIf="activeTab === 'pending'">
+            <!-- Document Details Section -->
+            <div class="details-section">
+              <h4 class="section-subtitle">Document Information</h4>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Document ID:</span>
+                  <span class="detail-value">#{{documentDetailsModal.document.id}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Type:</span>
+                  <span class="detail-value">{{getDocumentTypeDisplay(documentDetailsModal.document.documentType)}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">File Name:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.fileName}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Upload Time:</span>
+                  <span class="detail-value">{{formatDate(documentDetailsModal.document.uploadTimestamp)}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Status:</span>
+                  <span class="status-badge" [ngClass]="getStatusClass(documentDetailsModal.document.status)">
+                    {{getStatusDisplay(documentDetailsModal.document.status)}}
+                  </span>
+                </div>
+              </div>
+              <div class="doc-view-btn-container" *ngIf="getDocumentUrl(documentDetailsModal.document)">
+                <button class="btn-view-document" (click)="openDocumentLink(getDocumentUrl(documentDetailsModal.document)!)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  Open Document
+                </button>
+              </div>
+            </div>
+
+            <!-- Customer Details Section -->
+            <div class="details-section">
+              <h4 class="section-subtitle">Customer Information</h4>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Customer ID:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.customerId}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Name:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.firstName}} {{documentDetailsModal.document.lastName}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Email:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.email || 'N/A'}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Phone:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.contactNumber || 'N/A'}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Date of Birth:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.dateOfBirth || 'N/A'}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Nationality:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.nationality || 'N/A'}}</span>
+                </div>
+                <div class="detail-item full-width">
+                  <span class="detail-label">Address:</span>
+                  <span class="detail-value">
+                    {{documentDetailsModal.document.street}}, {{documentDetailsModal.document.city}}, 
+                    {{documentDetailsModal.document.state}}, {{documentDetailsModal.document.country}} - {{documentDetailsModal.document.pincode}}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- FOR ALL TAB: Document Info with button, Verification Notes, then Customer Info -->
+          <ng-container *ngIf="activeTab === 'all'">
+            <!-- Document Details Section -->
+            <div class="details-section">
+              <h4 class="section-subtitle">Document Information</h4>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Document ID:</span>
+                  <span class="detail-value">#{{documentDetailsModal.document.id}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Type:</span>
+                  <span class="detail-value">{{getDocumentTypeDisplay(documentDetailsModal.document.documentType)}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">File Name:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.fileName}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Upload Time:</span>
+                  <span class="detail-value">{{formatDate(documentDetailsModal.document.uploadTimestamp)}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Status:</span>
+                  <span class="status-badge" [ngClass]="getStatusClass(documentDetailsModal.document.status)">
+                    {{getStatusDisplay(documentDetailsModal.document.status)}}
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Verified By:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.verifiedByName || 'Not verified'}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Verified Time:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.verificationTimestamp ? formatDate(documentDetailsModal.document.verificationTimestamp) : '-'}}</span>
+                </div>
+              </div>
+              <div class="doc-view-btn-container" *ngIf="getDocumentUrl(documentDetailsModal.document)">
+                <button class="btn-view-document" (click)="openDocumentLink(getDocumentUrl(documentDetailsModal.document)!)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  Open Document
+                </button>
+              </div>
+            </div>
+
+            <!-- Verification Notes -->
+            <div class="details-section" *ngIf="documentDetailsModal.document.verificationNotes">
+              <h4 class="section-subtitle">Verification Notes</h4>
+              <div class="notes-box">
+                {{documentDetailsModal.document.verificationNotes}}
+              </div>
+            </div>
+
+            <!-- Customer Details Section -->
+            <div class="details-section">
+              <h4 class="section-subtitle">Customer Information</h4>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Customer ID:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.customerId}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Name:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.firstName}} {{documentDetailsModal.document.lastName}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Email:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.email || 'N/A'}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Phone:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.contactNumber || 'N/A'}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Date of Birth:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.dateOfBirth || 'N/A'}}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Nationality:</span>
+                  <span class="detail-value">{{documentDetailsModal.document.nationality || 'N/A'}}</span>
+                </div>
+                <div class="detail-item full-width">
+                  <span class="detail-label">Address:</span>
+                  <span class="detail-value">
+                    {{documentDetailsModal.document.street}}, {{documentDetailsModal.document.city}}, 
+                    {{documentDetailsModal.document.state}}, {{documentDetailsModal.document.country}} - {{documentDetailsModal.document.pincode}}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDocumentDetailsModal()">Close</button>
+          <!-- Show Approve/Reject buttons only for Pending tab -->
+          <ng-container *ngIf="activeTab === 'pending'">
+            <button 
+              class="btn btn-success" 
+              (click)="closeDocumentDetailsModal(); openActionModal('approve', documentDetailsModal.document!.id)"
+              [disabled]="!canPerformAction(documentDetailsModal.document!, 'verify')">
+              Approve
+            </button>
+            <button 
+              class="btn btn-danger" 
+              (click)="closeDocumentDetailsModal(); openActionModal('reject', documentDetailsModal.document!.id)"
+              [disabled]="!canPerformAction(documentDetailsModal.document!, 'reject')">
+              Reject
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+ 

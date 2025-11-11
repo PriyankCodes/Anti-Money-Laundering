@@ -1,0 +1,160 @@
+<div class="fullscreen-login-container">
+  <!-- Left Side - Decorative -->
+  <div class="login-right">
+    <div class="decorative-content">
+      <div class="brand-content">
+        <h2 class="brand-title">Welcome Back to FinTrace</h2>
+        <p class="brand-subtitle">Secure Financial Monitoring & Compliance</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z"/>
+            </svg>
+            <span>Bank-Grade Security</span>
+          </div>
+          <div class="feature-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>24/7 Monitoring</span>
+          </div>
+          <div class="feature-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>Regulatory Compliance</span>
+          </div>
+        </div>
+      </div>
+      <div class="decorative-pattern">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+        <div class="shape shape-6"></div>
+        <div class="shape shape-7"></div>
+        <div class="shape shape-8"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side - Form -->
+  <div class="login-left">
+    <div class="login-form-wrapper">
+      <!-- Logo -->
+      <div class="logo-section">
+        <div class="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" stroke="#5B21B6" stroke-width="2" fill="none"/>
+          </svg>
+          <span class="logo-text">FinTrace</span>
+        </div>
+      </div>
+
+      <!-- Welcome Text -->
+      <div class="welcome-section">
+        <h1 class="welcome-title">Welcome back!</h1>
+        <p class="welcome-subtitle">Login to get started with FinTrace</p>
+      </div>
+
+      <!-- Login Form -->
+      <form class="login-form" (ngSubmit)="onLogin()">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="Enter your email address"
+            [(ngModel)]="loginData.email" 
+            required>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-field">
+          <label for="password">Password</label>
+          <div class="password-input-wrapper">
+            <input 
+              [type]="showPassword ? 'text' : 'password'" 
+              id="password" 
+              name="password" 
+              placeholder="Enter your password"
+              [(ngModel)]="loginData.password" 
+              required>
+            <button type="button" class="password-toggle-btn" (click)="togglePassword()">
+              <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="2"/>
+                <circle cx="12" cy="12" r="3" stroke-width="2"/>
+              </svg>
+              <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke-width="2"/>
+                <line x1="1" y1="1" x2="23" y2="23" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Forgot Password Link -->
+        <div class="forgot-password-link">
+          <a routerLink="/auth/forgot-password">Forgot password?</a>
+        </div>
+
+        <!-- Captcha -->
+        <div class="captcha-field">
+          <label>CAPTCHA</label>
+          <div class="captcha-container">
+            <div class="captcha-image">
+              <canvas 
+                #captchaCanvas 
+                class="captcha-canvas"
+                oncontextmenu="return false;"
+                ondragstart="return false;"
+                style="user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; pointer-events: none; display: block;">
+              </canvas>
+            </div>
+            <button type="button" class="refresh-captcha-btn" (click)="refreshCaptcha()" title="Refresh Captcha">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+            </button>
+            <input 
+              type="text" 
+              placeholder="Enter result"
+              [(ngModel)]="captchaAnswer"
+              name="captchaAnswer"
+              class="captcha-input"
+              required
+              maxlength="3">
+          </div>
+        </div>
+
+        <!-- Login Button -->
+        <button type="submit" class="login-button" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Log in</span>
+          <span *ngIf="isLoading">Logging in...</span>
+        </button>
+
+        <!-- Register Link -->
+        <div class="register-section">
+          <p>Don't have an account? <a routerLink="/auth/register">Register here</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

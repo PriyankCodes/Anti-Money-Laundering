@@ -1,0 +1,265 @@
+<div class="profile-page">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading && profile" class="profile-container">
+    
+    <!-- Success/Error Messages -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+      <button class="close-btn" (click)="clearMessages()">×</button>
+    </div>
+    
+    <div *ngIf="errorMessage" class="alert alert-error">
+      {{ errorMessage }}
+      <button class="close-btn" (click)="clearMessages()">×</button>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="profile-info">
+        <h1 class="profile-name">{{ profile.firstName }} {{ profile.lastName }}</h1>
+        <p class="profile-email">{{ profile.email }}</p>
+        <div class="profile-badges">
+          <span class="badge" [class]="getStatusBadgeClass(profile.status)">
+            {{ profile.status }}
+          </span>
+          <span class="badge" [class]="getStatusBadgeClass(profile.kycStatus)">
+            KYC: {{ profile.kycStatus }}
+          </span>
+          <span class="badge" [class]="profile.emailVerified ? 'badge-success' : 'badge-warning'">
+            {{ profile.emailVerified ? 'Email Verified' : 'Email Unverified' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button *ngIf="!isEditMode" class="btn-primary" (click)="toggleEditMode()">
+          Edit Profile
+        </button>
+        <button *ngIf="isEditMode" class="btn-success" (click)="saveProfile()" [disabled]="saving || profileForm.invalid">
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <button *ngIf="isEditMode" class="btn-secondary" (click)="toggleEditMode()">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Profile Form -->
+    <form [formGroup]="profileForm" class="profile-form">
+      
+      <!-- Personal Information Section -->
+      <div class="form-section">
+        <h2 class="section-title">Personal Information</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name *</label>
+            <input 
+              type="text" 
+              id="firstName" 
+              formControlName="firstName"
+              [readonly]="!isEditMode"
+              [class.error]="f['firstName'].invalid && f['firstName'].touched">
+            <div *ngIf="f['firstName'].invalid && f['firstName'].touched" class="error-message">
+              <span *ngIf="f['firstName'].errors?.['required']">First name is required</span>
+              <span *ngIf="f['firstName'].errors?.['minlength']">First name must be at least 2 characters</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="middleName">Middle Name</label>
+            <input 
+              type="text" 
+              id="middleName" 
+              formControlName="middleName"
+              [readonly]="!isEditMode">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lastName">Last Name *</label>
+            <input 
+              type="text" 
+              id="lastName" 
+              formControlName="lastName"
+              [readonly]="!isEditMode"
+              [class.error]="f['lastName'].invalid && f['lastName'].touched">
+            <div *ngIf="f['lastName'].invalid && f['lastName'].touched" class="error-message">
+              <span *ngIf="f['lastName'].errors?.['required']">Last name is required</span>
+              <span *ngIf="f['lastName'].errors?.['minlength']">Last name must be at least 2 characters</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="contactNumber">Contact Number *</label>
+            <input 
+              type="tel" 
+              id="contactNumber" 
+              formControlName="contactNumber"
+              [readonly]="!isEditMode"
+              [class.error]="f['contactNumber'].invalid && f['contactNumber'].touched">
+            <div *ngIf="f['contactNumber'].invalid && f['contactNumber'].touched" class="error-message">
+              <span *ngIf="f['contactNumber'].errors?.['required']">Contact number is required</span>
+              <span *ngIf="f['contactNumber'].errors?.['pattern']">Please enter a valid contact number</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" [value]="profile.email" readonly class="readonly-field">
+            <small class="field-note">Email cannot be changed. <a href="#" (click)="sendOTP()">Send OTP to verify</a></small>
+          </div>
+
+          <div class="form-group">
+            <label for="dateOfBirth">Date of Birth *</label>
+            <input 
+              type="date" 
+              id="dateOfBirth" 
+              formControlName="dateOfBirth"
+              [readonly]="!isEditMode"
+              [class.error]="f['dateOfBirth'].invalid && f['dateOfBirth'].touched">
+            <div *ngIf="f['dateOfBirth'].invalid && f['dateOfBirth'].touched" class="error-message">
+              Date of birth is required
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nationality">Nationality *</label>
+            <input 
+              type="text" 
+              id="nationality" 
+              formControlName="nationality"
+              [readonly]="!isEditMode"
+              [class.error]="f['nationality'].invalid && f['nationality'].touched">
+            <div *ngIf="f['nationality'].invalid && f['nationality'].touched" class="error-message">
+              Nationality is required
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Address Section -->
+      <div class="form-section">
+        <h2 class="section-title">Address Information</h2>
+        
+        <div class="form-group">
+          <label for="street">Street Address *</label>
+          <input 
+            type="text" 
+            id="street" 
+            formControlName="street"
+            [readonly]="!isEditMode"
+            [class.error]="f['street'].invalid && f['street'].touched">
+          <div *ngIf="f['street'].invalid && f['street'].touched" class="error-message">
+            Street address is required
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input 
+              type="text" 
+              id="city" 
+              formControlName="city"
+              [readonly]="!isEditMode"
+              [class.error]="f['city'].invalid && f['city'].touched">
+            <div *ngIf="f['city'].invalid && f['city'].touched" class="error-message">
+              City is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="state">State/Province *</label>
+            <input 
+              type="text" 
+              id="state" 
+              formControlName="state"
+              [readonly]="!isEditMode"
+              [class.error]="f['state'].invalid && f['state'].touched">
+            <div *ngIf="f['state'].invalid && f['state'].touched" class="error-message">
+              State is required
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pincode">PIN Code *</label>
+            <input 
+              type="text" 
+              id="pincode" 
+              formControlName="pincode"
+              [readonly]="!isEditMode"
+              [class.error]="f['pincode'].invalid && f['pincode'].touched">
+            <div *ngIf="f['pincode'].invalid && f['pincode'].touched" class="error-message">
+              PIN code is required
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="country">Country *</label>
+            <input 
+              type="text" 
+              id="country" 
+              formControlName="country"
+              [readonly]="!isEditMode"
+              [class.error]="f['country'].invalid && f['country'].touched">
+            <div *ngIf="f['country'].invalid && f['country'].touched" class="error-message">
+              Country is required
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+<!-- OTP Verification Modal -->
+<div *ngIf="showOTPModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Verify Email to Update Profile</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <form [formGroup]="otpForm" class="modal-body">
+      <p>We've sent a 6-digit verification code to <strong>{{ profile?.email }}</strong>.</p>
+      <p>Please enter the code below to update your profile.</p>
+      <div class="form-group">
+        <label for="otp">Verification Code *</label>
+        <input 
+          type="text" 
+          id="otp" 
+          formControlName="otp"
+          placeholder="Enter 6-digit code"
+          maxlength="6"
+          [class.error]="of['otp'].invalid && of['otp'].touched"
+          autofocus>
+        <div *ngIf="of['otp'].invalid && of['otp'].touched" class="error-message">
+          <span *ngIf="of['otp'].errors?.['required']">Verification code is required</span>
+          <span *ngIf="of['otp'].errors?.['pattern']">Please enter a valid 6-digit code</span>
+        </div>
+      </div>
+    </form>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()" [disabled]="saving">Cancel</button>
+      <button class="btn-primary" (click)="verifyOTP()" [disabled]="saving || otpForm.invalid">
+        {{ saving ? 'Updating Profile...' : 'Verify & Update Profile' }}
+      </button>
+    </div>
+  </div>
+</div>
+

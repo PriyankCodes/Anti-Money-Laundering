@@ -1,0 +1,209 @@
+# ===================================
+# AML System - Root .gitignore
+# ===================================
+
+# ===================================
+# SENSITIVE CONFIGURATION FILES
+# ===================================
+# Never commit sensitive credentials
+**/application.properties
+**/application-*.properties
+**/application.yml
+**/application-*.yml
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Database credentials
+**/database.properties
+
+# ===================================
+# BACKEND (Spring Boot / Java)
+# ===================================
+
+# Maven
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
+
+# Gradle
+**/.gradle/
+**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Compiled class files
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+
+# Log files
+**/*.log
+**/logs/
+**/spring.log
+
+# IDE - Eclipse
+**/.apt_generated
+**/.classpath
+**/.factorypath
+**/.project
+**/.settings
+**/.springBeans
+**/.sts4-cache
+
+# IDE - IntelliJ IDEA
+**/.idea/
+**/*.iws
+**/*.iml
+**/*.ipr
+**/out/
+
+# IDE - NetBeans
+**/nbproject/private/
+**/nbbuild/
+**/dist/
+**/nbdist/
+**/.nb-gradle/
+
+# IDE - VS Code
+**/.vscode/
+!**/.vscode/settings.json
+!**/.vscode/tasks.json
+!**/.vscode/launch.json
+!**/.vscode/extensions.json
+
+# Uploads directory (contains user-uploaded files)
+**/uploads/
+**/temp/
+**/tmp/
+
+# ===================================
+# FRONTEND (Angular / Node.js)
+# ===================================
+
+# Dependencies
+**/node_modules/
+**/bower_components/
+
+# Compiled output
+**/dist/
+**/tmp/
+**/out-tsc/
+**/bazel-out/
+
+# Angular
+**/.angular/
+**/.angular/cache/
+
+# Node
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/lerna-debug.log*
+**/pnpm-debug.log*
+
+# Testing
+**/coverage/
+**/.nyc_output/
+**/lib-cov/
+**/*.lcov
+**/.grunt/
+**/testem.log
+**/typings/
+**/__screenshots__/
+
+# Miscellaneous
+**/.sass-cache/
+**/connect.lock
+**/libpeerconnection.log
+
+# ===================================
+# SYSTEM FILES
+# ===================================
+
+# macOS
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/._*
+
+# Windows
+**/Thumbs.db
+**/Thumbs.db:encryptable
+**/ehthumbs.db
+**/ehthumbs_vista.db
+**/Desktop.ini
+**/$RECYCLE.BIN/
+
+# Linux
+**/*~
+**/.fuse_hidden*
+**/.directory
+**/.Trash-*
+
+# ===================================
+# GIT
+# ===================================
+**/.git/
+**/.gitattributes
+
+# ===================================
+# DOCUMENTATION (Keep these)
+# ===================================
+# Uncomment if you want to ignore generated docs
+# **/javadoc/
+# **/docs/generated/
+
+# ===================================
+# METADATA
+# ===================================
+**/.metadata/
+**/.recommenders/
+
+# ===================================
+# BACKUP FILES
+# ===================================
+**/*.bak
+**/*.backup
+**/*.swp
+**/*.swo
+**/*~
+
+# ===================================
+# PACKAGE FILES
+# ===================================
+**/*.zip
+**/*.tar.gz
+**/*.rar
+
+# ===================================
+# KEEP THESE FILES (IMPORTANT)
+# ===================================
+# Keep README and documentation
+!README.md
+!**/README.md
+!IMPLEMENTATION_SUMMARY.md
+!INTERVIEW_QUESTIONS_ANSWERS.md
+!QUICK_REFERENCE_CHEATSHEET.md
+!RULE_FIELDS_UPDATE_SUMMARY.md
+!RULE_VALIDATION_REPORT.md
+
+# Keep diagrams and images
+!*.png
+!*.jpg
+!*.jpeg
+!*.svg
+
+# Keep configuration templates
+!**/application.properties.template
+!**/application.yml.template

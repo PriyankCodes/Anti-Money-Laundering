@@ -1,0 +1,306 @@
+
+    <!-- Risky Countries Content -->
+    <div class="countries-content">
+      <!-- Statistics Cards -->
+      <div class="stats-section">
+        <div class="stats-card">
+          <div class="stats-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+              <polyline points="2,12 6,12 8,7 13,17 16,12 22,12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </div>
+          <div class="stats-content">
+            <div class="stats-number">{{ totalCountries }}</div>
+            <div class="stats-label">Total Countries</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Countries Section -->
+      <div class="countries-section">
+        <!-- Countries Header -->
+        <div class="countries-header">
+          <h2 class="section-title">Countries</h2>
+          <div class="header-actions-row">
+            <div class="search-countries">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="8" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+                <path d="M21 21L16.65 16.65" stroke="#9CA3AF" stroke-width="2"/>
+              </svg>
+              <input type="text" placeholder="Search countries" class="search-countries-input" [(ngModel)]="searchTerm" (input)="onSearchChange()">
+            </div>
+            <button class="new-country-btn" (click)="openAddModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-width="2"/>
+                <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              New Country
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+          <div class="filter-group">
+            <label for="riskFilter">Risk Level:</label>
+            <select id="riskFilter" [(ngModel)]="riskFilter" (change)="onFilterChange()">
+              <option value="all">All Risk Levels</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Countries Table -->
+        <div class="countries-table-container">
+          <div class="table-wrapper">
+            <table class="countries-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Risk</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loading" class="table-row">
+                  <td colspan="4" class="text-center">Loading countries...</td>
+                </tr>
+                <tr *ngIf="!loading && filteredCountries.length === 0" class="table-row">
+                  <td colspan="4" class="text-center">No countries found</td>
+                </tr>
+                <tr *ngFor="let country of getPaginatedCountries()" class="table-row">
+                  <td class="country-code">{{ country.code }}</td>
+                  <td class="country-name">{{ country.name }}</td>
+                  <td class="country-risk">
+                    <span [class]="getRiskBadgeClass(country.riskLevel)">{{ country.riskLevel }}</span>
+                  </td>
+                  <td class="country-actions">
+                    <div class="action-buttons">
+                      <button class="action-btn view-btn" (click)="openViewModal(country)" title="View Details">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                      </button>
+                      <button class="action-btn edit-btn" (click)="openEditModal(country)" title="Edit Country">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                      </button>
+                      <button class="action-btn delete-btn" (click)="openDeleteModal(country)" title="Delete Country">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2" fill="none"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <app-pagination
+            [currentPage]="currentPage"
+            [pageSize]="pageSize"
+            [totalItems]="filteredCountries.length"
+            (pageChange)="goToPage($event)"
+            (pageSizeChange)="pageSize = $event; onPageSizeChange()">
+          </app-pagination>
+        </div>
+      </div>
+    </div>
+<!-- Add Country Modal -->
+<div *ngIf="showAddModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add New Country</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="createCountry()" #addForm="ngForm">
+        <div class="form-group">
+          <label for="countryCode">Country Code *</label>
+          <input 
+            type="text" 
+            id="countryCode" 
+            [(ngModel)]="newCountry.code" 
+            name="countryCode"
+            maxlength="2"
+            placeholder="e.g., US, IN"
+            [class.error]="formErrors.code"
+            required>
+          <div *ngIf="formErrors.code" class="error-message">{{ formErrors.code }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="countryName">Country Name *</label>
+          <input 
+            type="text" 
+            id="countryName" 
+            [(ngModel)]="newCountry.name" 
+            name="countryName"
+            placeholder="e.g., United States, India"
+            [class.error]="formErrors.name"
+            required>
+          <div *ngIf="formErrors.name" class="error-message">{{ formErrors.name }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="riskLevel">Risk Level *</label>
+          <select 
+            id="riskLevel" 
+            [(ngModel)]="newCountry.riskLevel" 
+            name="riskLevel"
+            [class.error]="formErrors.riskLevel"
+            required>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+          <div *ngIf="formErrors.riskLevel" class="error-message">{{ formErrors.riskLevel }}</div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Creating...' : 'Create Country' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Country Modal -->
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit Country</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="updateCountry()" #editForm="ngForm">
+        <div class="form-group">
+          <label for="editCountryCode">Country Code *</label>
+          <input 
+            type="text" 
+            id="editCountryCode" 
+            [(ngModel)]="editCountry.code" 
+            name="editCountryCode"
+            maxlength="2"
+            [class.error]="formErrors.code"
+            required>
+          <div *ngIf="formErrors.code" class="error-message">{{ formErrors.code }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="editCountryName">Country Name *</label>
+          <input 
+            type="text" 
+            id="editCountryName" 
+            [(ngModel)]="editCountry.name" 
+            name="editCountryName"
+            [class.error]="formErrors.name"
+            required>
+          <div *ngIf="formErrors.name" class="error-message">{{ formErrors.name }}</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="editRiskLevel">Risk Level *</label>
+          <select 
+            id="editRiskLevel" 
+            [(ngModel)]="editCountry.riskLevel" 
+            name="editRiskLevel"
+            [class.error]="formErrors.riskLevel"
+            required>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+          <div *ngIf="formErrors.riskLevel" class="error-message">{{ formErrors.riskLevel }}</div>
+        </div>
+        
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Updating...' : 'Update Country' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Country Modal -->
+<div *ngIf="showViewModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Country Details</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="details-grid" *ngIf="selectedCountry">
+        <div class="detail-item">
+          <label>Country Code:</label>
+          <span>{{ selectedCountry.code }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Country Name:</label>
+          <span>{{ selectedCountry.name }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Risk Level:</label>
+          <span [class]="getRiskBadgeClass(selectedCountry.riskLevel)">{{ selectedCountry.riskLevel }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedCountry.createdAt">
+          <label>Created:</label>
+          <span>{{ selectedCountry.createdAt | date:'medium' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedCountry.updatedAt">
+          <label>Last Updated:</label>
+          <span>{{ selectedCountry.updatedAt | date:'medium' }}</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModals()">Close</button>
+        <button type="button" class="btn-primary" (click)="openEditFromView(selectedCountry!)">Edit Country</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Country Modal -->
+<div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Delete Country</h3>
+      <button class="close-btn" (click)="closeModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-confirmation" *ngIf="selectedCountry">
+        <p>Are you sure you want to delete the following country?</p>
+        <div class="country-info">
+          <strong>{{ selectedCountry.code }} - {{ selectedCountry.name }}</strong>
+          <span [class]="getRiskBadgeClass(selectedCountry.riskLevel)">{{ selectedCountry.riskLevel }}</span>
+        </div>
+        <p class="warning-text">This action cannot be undone.</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn-danger" (click)="deleteCountry()" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Deleting...' : 'Delete Country' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

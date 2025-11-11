@@ -1,0 +1,68 @@
+    <!-- New Charts Section -->
+    <div class="dashboard-charts-section">
+      <!-- Trend Analysis -->
+      <div class="dashboard-chart-card">
+        <div class="dashboard-chart-header">
+          <h3>Alert & SAR Trends</h3>
+          <span class="dashboard-chart-subtitle">Last 6 months activity</span>
+        </div>
+        <div class="dashboard-chart-body">
+          <div class="dashboard-line-chart">
+            <div class="dashboard-chart-grid">
+              <div *ngFor="let data of trendData" class="dashboard-trend-column">
+                <div class="dashboard-trend-bars">
+                  <div class="dashboard-trend-bar alerts" [style.height.%]="(data.alerts / 50) * 100" 
+                       [title]="'Alerts: ' + data.alerts"></div>
+                  <div class="dashboard-trend-bar sars" [style.height.%]="(data.sars / 20) * 100"
+                       [title]="'SARs: ' + data.sars"></div>
+                </div>
+                <div class="dashboard-trend-label">{{ data.month }}</div>
+              </div>
+            </div>
+            <div class="dashboard-chart-legend-horizontal">
+              <div class="dashboard-legend-item"><span class="dashboard-legend-dot alerts"></span> Alerts</div>
+              <div class="dashboard-legend-item"><span class="dashboard-legend-dot sars"></span> SARs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Distribution -->
+      <div class="dashboard-chart-card">
+        <div class="dashboard-chart-header">
+          <h3>Risk Distribution</h3>
+          <span class="dashboard-chart-subtitle">Customer risk levels</span>
+        </div>
+        <div class="dashboard-chart-body">
+          <div class="pie-chart-wrapper">
+            <svg class="pie-chart" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="80" fill="none" stroke="#f1f5f9" stroke-width="40"/>
+              <ng-container *ngFor="let label of riskDistribution.labels; let i = index">
+                <circle 
+                  cx="100" 
+                  cy="100" 
+                  r="80"
+                  fill="none"
+                  [attr.stroke]="['#10b981', '#f59e0b', '#f97316', '#ef4444'][i]"
+                  stroke-width="40"
+                  [attr.stroke-dasharray]="getPieSlice(i)"
+                  [attr.stroke-dashoffset]="getPieOffset(i)"
+                  class="pie-slice"
+                  transform="rotate(-90 100 100)">
+                  <title>{{ label }}: {{ riskDistribution.values[i] }} ({{ getPercentage(riskDistribution.values[i], riskDistributionTotal) }}%)</title>
+                </circle>
+              </ng-container>
+            </svg>
+            <div class="pie-legend">
+              <div *ngFor="let label of riskDistribution.labels; let i = index" class="pie-legend-item">
+                <span class="pie-color-dot" [style.background]="['#10b981', '#f59e0b', '#f97316', '#ef4444'][i]"></span>
+                <div class="pie-legend-info">
+                  <span class="pie-label">{{ label }}</span>
+                  <span class="pie-value">{{ riskDistribution.values[i] }} ({{ getPercentage(riskDistribution.values[i], riskDistributionTotal) }}%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

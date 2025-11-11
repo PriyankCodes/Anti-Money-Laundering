@@ -1,0 +1,800 @@
+<div class="alerts-container">
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="success-banner">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+      <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'all'"
+        (click)="switchTab('all')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+          <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="17" r="1" fill="currentColor"/>
+        </svg>
+        All Open Alerts
+        <span class="tab-badge">{{ getOpenAlertsCount() }}</span>
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'assigned'"
+        (click)="switchTab('assigned')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+          <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+          <polyline points="17 11 19 13 23 9" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        My Assigned Alerts
+        <span class="tab-badge">{{ assignedAlerts.length }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Search by customer name, alert ID, or rule..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="applyFilters()">
+    </div>
+
+    <select [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()" class="filter-select">
+      <option value="all">All Status</option>
+      <option *ngIf="activeTab !== 'assigned'" value="OPEN">Open</option>
+      <option value="INVESTIGATING">Investigating</option>
+      <option value="TRUE_POSITIVE">True Positive</option>
+      <option value="FALSE_POSITIVE">False Positive</option>
+    </select>
+
+    <select [(ngModel)]="filterRiskLevel" (ngModelChange)="applyFilters()" class="filter-select">
+      <option value="all">All Risk Levels</option>
+      <option value="high">High Risk (70+)</option>
+      <option value="medium">Medium Risk (40-69)</option>
+      <option value="low">Low Risk (<40)</option>
+    </select>
+
+    <button 
+      class="sort-toggle-btn" 
+      (click)="toggleSortOrder()"
+      [class.active]="sortNewestFirst"
+      title="{{ sortNewestFirst ? 'Newest First' : 'Oldest First' }}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline *ngIf="sortNewestFirst" points="5 12 12 5 19 12"/>
+        <polyline *ngIf="!sortNewestFirst" points="19 12 12 19 5 12"/>
+      </svg>
+      <span>{{ sortNewestFirst ? 'Newest First' : 'Oldest First' }}</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading alerts...</p>
+  </div>
+
+  <!-- Alerts Table -->
+  <div *ngIf="!isLoading" class="alerts-table-container">
+    <div *ngIf="filteredAlerts.length === 0" class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <h3>No alerts found</h3>
+      <p>There are no alerts matching your criteria</p>
+    </div>
+
+    <table *ngIf="filteredAlerts.length > 0" class="alerts-table">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Transaction ID</th>
+          <th>Risk Score</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let alert of paginatedAlerts">
+         <td>
+            <div class="customer-info">
+              <div class="customer-name">{{ alert.customerName }}</div>
+              <div class="customer-id">Alert ID: {{ alert.alertId }}</div>
+            </div>
+          </td>
+          <td>
+            <span *ngIf="alert.transactionId" class="transaction-id">#{{ alert.transactionId }}</span>
+            <span *ngIf="!alert.transactionId" class="text-muted">N/A</span>
+          </td>
+          <td>
+         
+            <span class="risk-badge" [class]="getRiskClass(alert.riskScore)">
+              {{ alert.riskScore }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [class]="getStatusClass(alert.status)">
+              {{ alert.status }}
+            </span>
+          </td>
+       
+          <td>{{ alert.createdAt | date:'short' }}</td>
+          <td>
+            <div class="action-buttons">
+              <!-- For Unassigned Alerts: Show only Review and Assign -->
+              <ng-container *ngIf="isUnassigned(alert) && activeTab === 'all'">
+                <button 
+                  class="btn-investigate"
+                  (click)="openInvestigation(alert.alertId)"
+                  title="Review">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  Review
+                </button>
+                <button 
+                  class="btn-assign"
+                  (click)="assignToMe(alert, $event)"
+                  title="Assign to me">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="8.5" cy="7" r="4"/>
+                    <line x1="20" y1="8" x2="20" y2="14"/>
+                    <line x1="23" y1="11" x2="17" y2="11"/>
+                  </svg>
+                  Assign
+                </button>
+              </ng-container>
+              
+              <!-- For Assigned Alerts: Show all actions -->
+              <ng-container *ngIf="!isUnassigned(alert) || activeTab === 'assigned'">
+                <button 
+                  class="btn-investigate"
+                  (click)="openInvestigation(alert.alertId)"
+                  title="Investigate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                  </svg>
+                  Investigate
+                </button>
+                <button 
+                  class="btn-sar"
+                  (click)="navigateToSAR(alert)"
+                  title="File SAR">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  SAR
+                </button>
+              </ng-container>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination Controls -->
+    <div *ngIf="filteredAlerts.length > 0" class="pagination-container">
+      <div class="pagination-info">
+        Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredAlerts.length) }} of {{ filteredAlerts.length }} entries
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === 1"
+            (click)="goToPage(1)"
+            title="First">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="11 17 6 12 11 7"/>
+              <polyline points="18 17 13 12 18 7"/>
+            </svg>
+          </button>
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === 1"
+            (click)="previousPage()"
+            title="Previous">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+
+          <button 
+            *ngFor="let page of getPageNumbers()"
+            class="pagination-number"
+            [class.active]="page === currentPage"
+            [class.ellipsis]="page === -1"
+            [disabled]="page === -1"
+            (click)="page !== -1 && goToPage(page)">
+            {{ page === -1 ? '...' : page }}
+          </button>
+
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === totalPages"
+            (click)="nextPage()"
+            title="Next">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+          <button 
+            class="pagination-btn pagination-nav"
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(totalPages)"
+            title="Last">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="13 17 18 12 13 7"/>
+              <polyline points="6 17 11 12 6 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="pagination-size">
+          <label>Show:</label>
+          <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()" class="page-size-select">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Investigation Modal -->
+<div class="modal-overlay" *ngIf="showInvestigationModal" (click)="closeInvestigationModal()">
+  <div class="modal-content investigation-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Investigation: Alert #{{ selectedAlert?.alertId }}</h2>
+      <button class="close-button" (click)="closeInvestigationModal()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedAlert">
+      <!-- For Assigned Alerts: Show minimal info + Review button + Take Action -->
+      <ng-container *ngIf="!isUnassigned(selectedAlert)">
+        <!-- 1. Alert Overview -->
+        <div class="investigation-section">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            1. Alert Overview
+          </h3>
+          <div class="details-grid">
+            <div class="detail-item">
+              <label>Alert ID:</label>
+              <span><strong>#{{ selectedAlert.alertId }}</strong></span>
+            </div>
+            <div class="detail-item">
+              <label>Customer:</label>
+              <span>{{ selectedAlert.customerName }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Customer ID:</label>
+              <span>{{ selectedAlert.customerId }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Risk Score:</label>
+              <span class="risk-badge" [class]="getRiskClass(selectedAlert.riskScore)">
+                {{ selectedAlert.riskScore }}/100
+              </span>
+            </div>
+            <div class="detail-item">
+              <label>Alert History:</label>
+              <button class="btn-history" (click)="viewCustomerAlertHistory(selectedAlert.customerId)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                View History
+              </button>
+            </div>
+            <div class="detail-item">
+              <label>Status:</label>
+              <span class="status-badge" [class]="getStatusClass(selectedAlert.status)">
+                {{ selectedAlert.status }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <label>Created:</label>
+              <span>{{ selectedAlert.createdAt | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Alert History Section (Collapsible) -->
+        <div class="investigation-section" *ngIf="showCustomerHistory">
+          <div class="history-header">
+            <h3>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Customer Alert History - {{ selectedAlert.customerName }}
+            </h3>
+            <button class="btn-close-history" (click)="closeCustomerHistory()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Close History
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="loadingCustomerHistory" class="loading-history">
+            <div class="spinner-small"></div>
+            <p>Loading customer alert history...</p>
+          </div>
+
+          <!-- History Table -->
+          <div *ngIf="!loadingCustomerHistory" class="history-table-container">
+            <div *ngIf="customerAlertHistory.length === 0" class="empty-history">
+              <p>No previous alerts found for this customer.</p>
+            </div>
+
+            <table *ngIf="customerAlertHistory.length > 0" class="history-table">
+              <thead>
+                <tr>
+                  <th>Alert ID</th>
+                  <th>Transaction ID</th>
+                  <th>Risk Score</th>
+                  <th>Status</th>
+                  <th>Rule Triggered</th>
+                  <th>Assigned Officer</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let alert of customerAlertHistory" 
+                    [class.current-alert]="alert.alertId === selectedAlert.alertId">
+                  <td>
+                    <span class="alert-id">#{{ alert.alertId }}</span>
+                    <span *ngIf="alert.alertId === selectedAlert.alertId" class="current-badge">Current</span>
+                  </td>
+                  <td>
+                    <span class="transaction-id">#{{ alert.transactionId || 'N/A' }}</span>
+                  </td>
+                  <td>
+                    <span class="risk-badge" [class]="getRiskClass(alert.riskScore)">
+                      {{ alert.riskScore }}/100
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class]="getStatusClass(alert.status)">
+                      {{ alert.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="rule-cell">{{ alert.ruleTriggered }}</div>
+                  </td>
+                  <td>
+                    <div class="officer-cell">
+                      {{ alert.assignedOfficerName || 'Unassigned' }}
+                    </div>
+                  </td>
+                  <td>{{ alert.createdAt | date:'short' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. Triggered Rules & Why Flagged -->
+        <div class="investigation-section">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            2. Triggered Rules & Analysis
+          </h3>
+          <div class="simple-rule-box">
+            <div class="rule-label">Rule Triggered:</div>
+            <div class="rule-value">{{ selectedAlert.ruleTriggered }}</div>
+            <div class="rule-description">
+              <strong>Why Flagged:</strong> {{ getRuleDescription(selectedAlert.ruleTriggered) }}
+            </div>
+          </div>
+          
+          <!-- Toggle Detailed Review Button -->
+          <div style="margin-top: 1rem;">
+            <button class="btn-primary" (click)="showDetailedReview = !showDetailedReview">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-right: 0.5rem;">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              {{ showDetailedReview ? 'Hide' : 'View' }} Detailed Transaction Review
+            </button>
+          </div>
+        </div>
+
+        <!-- Detailed Review Section (Collapsible) -->
+        <ng-container *ngIf="showDetailedReview">
+          <!-- Transaction Details -->
+          <div class="investigation-section" *ngIf="selectedTransaction">
+            <h3>Transaction Details</h3>
+            <div class="transaction-details-grid">
+              <div class="detail-item">
+                <label>Amount:</label>
+                <span class="amount-highlight">{{ selectedTransaction.amount | currency:selectedTransaction.currency }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Type:</label>
+                <span>{{ selectedTransaction.transactionType }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Date:</label>
+                <span>{{ selectedTransaction.timestamp | date:'medium' }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Description:</label>
+                <span>{{ selectedTransaction.description || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sender Details -->
+          <div class="investigation-section" *ngIf="selectedTransaction">
+            <h3>Sender Account Details</h3>
+            <div class="account-details-card">
+              <div class="details-grid">
+                <div class="detail-item">
+                  <label>Name:</label>
+                  <span>{{ senderAccountDetails?.customerName || selectedTransaction.customerName }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Account Number:</label>
+                  <span class="account-number">{{ senderAccountDetails?.accountNumber || selectedTransaction.senderAccountNumber }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Account Type:</label>
+                  <span>{{ senderAccountDetails?.accountType || 'SAVINGS' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Currency:</label>
+                  <span>{{ selectedTransaction.currency }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Receiver Details -->
+          <div class="investigation-section" *ngIf="selectedTransaction">
+            <h3>Receiver Account Details</h3>
+            <div class="account-details-card">
+              <div class="details-grid">
+                <div class="detail-item">
+                  <label>Name:</label>
+                  <span>{{ receiverAccountDetails?.customerName || selectedTransaction.counterpartyName }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Account Number:</label>
+                  <span class="account-number">{{ receiverAccountDetails?.accountNumber || selectedTransaction.counterpartyAccount }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Account Type:</label>
+                  <span>{{ receiverAccountDetails?.accountType || 'SAVINGS' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Currency:</label>
+                  <span>{{ selectedTransaction.currency }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Recent Transactions -->
+          <div class="investigation-section">
+            <h3>Customer Recent Transactions</h3>
+            <div *ngIf="loadingTransactions" class="loading-state-small">
+              <div class="spinner-small"></div>
+              <p>Loading transactions...</p>
+            </div>
+            <div *ngIf="!loadingTransactions && customerTransactions.length > 0" class="transactions-list">
+              <table class="transactions-table">
+                <thead>
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let txn of customerTransactions.slice(0, 5)">
+                    <td>#{{ txn.transactionId }}</td>
+                    <td>{{ txn.transactionType }}</td>
+                    <td>{{ txn.amount | currency:txn.currency }}</td>
+                    <td>{{ txn.timestamp | date:'short' }}</td>
+                    <td>
+                      <span class="status-badge" [class.status-completed]="txn.status === 'COMPLETED'">
+                        {{ txn.status }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Take Action Section -->
+        <div class="investigation-section">
+          <h3>Take Action</h3>
+          
+          <!-- Warning if cannot take action -->
+          <div *ngIf="!canTakeAction()" class="alert-warning-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span *ngIf="isFinalStatus(selectedAlert.status)">
+              This alert has been finalized with status: <strong>{{ selectedAlert.status }}</strong>. No further actions can be taken.
+            </span>
+            <span *ngIf="!isFinalStatus(selectedAlert.status) && selectedAlert.assignedOfficerName && !isAlertAssignedToMe(selectedAlert)">
+              This alert is assigned to <strong>{{ selectedAlert.assignedOfficerName }}</strong>. Only the assigned officer can take action.
+            </span>
+          </div>
+          
+          <div class="form-group">
+            <label>Action: *</label>
+            <select 
+              [(ngModel)]="investigationAction" 
+              class="form-control"
+              [disabled]="!canTakeAction()">
+              <option value="TRUE_POSITIVE">Mark as True Positive</option>
+              <option value="FALSE_POSITIVE">Mark as False Positive</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Investigation Notes: *</label>
+            <textarea 
+              [(ngModel)]="investigationNotes"
+              class="form-control"
+              rows="5"
+              placeholder="Enter your investigation findings, observations, and reasoning for the action taken..."
+              [disabled]="!canTakeAction()"
+              required></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeInvestigationModal()">
+              {{ canTakeAction() ? 'Cancel' : 'Close' }}
+            </button>
+            <button 
+              class="btn-primary" 
+              (click)="submitInvestigation()" 
+              [disabled]="!investigationNotes.trim() || !canTakeAction()">
+              Submit Investigation
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- For Unassigned Alerts: Show full details (Review Mode) -->
+      <ng-container *ngIf="isUnassigned(selectedAlert)">
+        <!-- Alert Details -->
+        <div class="investigation-section">
+          <h3>Alert Details</h3>
+          <div class="details-grid">
+            <div class="detail-item">
+              <label>Customer:</label>
+              <span>{{ selectedAlert.customerName }} (ID: {{ selectedAlert.customerId }})</span>
+            </div>
+            <div class="detail-item">
+              <label>Risk Score:</label>
+              <span class="risk-badge" [class]="getRiskClass(selectedAlert.riskScore)">
+                {{ selectedAlert.riskScore }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <label>Status:</label>
+              <span class="status-badge" [class]="getStatusClass(selectedAlert.status)">
+                {{ selectedAlert.status }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <label>Created:</label>
+              <span>{{ selectedAlert.createdAt | date:'medium' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Transaction ID:</label>
+              <span *ngIf="selectedAlert.transactionId">#{{ selectedAlert.transactionId }}</span>
+              <span *ngIf="!selectedAlert.transactionId" class="text-muted">N/A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rules Triggered Table -->
+        <div class="investigation-section">
+          <h3>Rules Triggered</h3>
+          <div class="rules-table-container">
+            <table class="rules-table">
+              <thead>
+                <tr>
+                  <th>Rule Name</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rule of parseTriggeredRules(selectedAlert.ruleTriggered)">
+                  <td class="rule-name">{{ rule }}</td>
+                  <td>
+                    <span class="rule-type-badge">{{ getRuleType(rule) }}</span>
+                  </td>
+                  <td class="rule-desc">{{ getRuleDescription(rule) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="investigation-section" *ngIf="selectedTransaction">
+          <h3>Transaction Details</h3>
+          <div class="transaction-details-grid">
+            <div class="detail-item">
+              <label>Amount:</label>
+              <span class="amount-highlight">{{ selectedTransaction.amount | currency:selectedTransaction.currency }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Type:</label>
+              <span>{{ selectedTransaction.transactionType }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Date:</label>
+              <span>{{ selectedTransaction.timestamp | date:'medium' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Description:</label>
+              <span>{{ selectedTransaction.description || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sender Details -->
+        <div class="investigation-section" *ngIf="selectedTransaction">
+          <h3>Sender Account Details</h3>
+          <div class="account-details-card">
+            <div class="details-grid">
+              <div class="detail-item">
+                <label>Name:</label>
+                <span>{{ senderAccountDetails?.customerName || selectedTransaction.customerName }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Account Number:</label>
+                <span class="account-number">{{ senderAccountDetails?.accountNumber || selectedTransaction.senderAccountNumber }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Account Type:</label>
+                <span>{{ senderAccountDetails?.accountType || 'SAVINGS' }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Currency:</label>
+                <span>{{ selectedTransaction.currency }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Receiver Details -->
+        <div class="investigation-section" *ngIf="selectedTransaction">
+          <h3>Receiver Account Details</h3>
+          <div class="account-details-card">
+            <div class="details-grid">
+              <div class="detail-item">
+                <label>Name:</label>
+                <span>{{ receiverAccountDetails?.customerName || selectedTransaction.counterpartyName }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Account Number:</label>
+                <span class="account-number">{{ receiverAccountDetails?.accountNumber || selectedTransaction.counterpartyAccount }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Account Type:</label>
+                <span>{{ receiverAccountDetails?.accountType || 'SAVINGS' }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Currency:</label>
+                <span>{{ selectedTransaction.currency }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Recent Transactions -->
+        <div class="investigation-section">
+          <h3>Customer Recent Transactions</h3>
+          <div *ngIf="loadingTransactions" class="loading-state-small">
+            <div class="spinner-small"></div>
+            <p>Loading transactions...</p>
+          </div>
+          <div *ngIf="!loadingTransactions && customerTransactions.length > 0" class="transactions-list">
+            <table class="transactions-table">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Counterparty</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let txn of customerTransactions.slice(0, 10)">
+                  <td>#{{ txn.transactionId }}</td>
+                  <td>{{ txn.transactionType }}</td>
+                  <td>{{ txn.amount | currency:txn.currency }}</td>
+                  <td>
+                    <div>{{ txn.counterpartyName || 'N/A' }}</div>
+                    <div class="text-small">{{ txn.counterpartyAccount }}</div>
+                  </td>
+                  <td>{{ txn.timestamp | date:'short' }}</td>
+                  <td>
+                    <span class="status-badge" [class.status-completed]="txn.status === 'COMPLETED'">
+                      {{ txn.status }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Close button for unassigned alerts -->
+        <div class="modal-actions">
+          <button class="btn-secondary" (click)="closeInvestigationModal()">Close</button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications -->
+<app-toast></app-toast>

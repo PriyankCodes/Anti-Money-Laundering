@@ -1,0 +1,329 @@
+<div class="fullscreen-login-container">
+  <!-- Left Side - Decorative -->
+  <div class="login-right">
+    <div class="decorative-content">
+      <div class="brand-content">
+        <h2 class="brand-title">Welcome to FinTrace</h2>
+        <p class="brand-subtitle">Advanced Anti-Money Laundering Platform</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>Real-time Transaction Monitoring</span>
+          </div>
+          <div class="feature-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>AI-Powered Risk Detection</span>
+          </div>
+          <div class="feature-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>Automated Compliance Reporting</span>
+          </div>
+        </div>
+      </div>
+      <div class="decorative-pattern">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+        <div class="shape shape-6"></div>
+        <div class="shape shape-7"></div>
+        <div class="shape shape-8"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side - Form -->
+  <div class="login-left">
+    <div class="login-form-wrapper" style="max-width: 600px;">
+      <!-- Logo -->
+      <div class="logo-section">
+        <div class="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" stroke="#5B21B6" stroke-width="2" fill="none"/>
+          </svg>
+          <span class="logo-text">FinTrace</span>
+        </div>
+      </div>
+
+      <!-- Welcome Text -->
+      <div class="welcome-section">
+        <h1 class="welcome-title">Create Your Account</h1>
+        <p class="welcome-subtitle">Join FinTrace to enhance financial security</p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-container">
+        <div class="progress-steps">
+          <div class="progress-step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+            <div class="step-number">1</div>
+            <div class="step-label">Personal</div>
+          </div>
+          <div class="progress-line" [class.completed]="currentStep > 1"></div>
+          <div class="progress-step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+            <div class="step-number">2</div>
+            <div class="step-label">Address</div>
+          </div>
+          <div class="progress-line" [class.completed]="currentStep > 2"></div>
+          <div class="progress-step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+            <div class="step-number">3</div>
+            <div class="step-label">Verify</div>
+          </div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" [style.width.%]="progressPercentage"></div>
+        </div>
+        <div class="progress-text">{{ progressPercentage }}% Complete</div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ errorMessage }}
+      </div>
+
+      <!-- Registration Form -->
+      <form class="login-form" [formGroup]="registrationForm" (ngSubmit)="onSubmit()" style="gap: 1rem;">
+        <!-- Step 1: Personal Details -->
+        <div *ngIf="currentStep === 1">
+          <div style="margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 600; color: #1a202c; margin-bottom: 1rem;">Personal Details</h3>
+          </div>
+
+          <!-- Email -->
+          <div class="form-field">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" formControlName="email" placeholder="john.doe@example.com">
+            <div *ngIf="getFieldError('email')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('email') }}</div>
+          </div>
+
+          <!-- Name Fields Row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-field">
+              <label for="firstName">First Name *</label>
+              <input type="text" id="firstName" formControlName="firstName" placeholder="John">
+              <div *ngIf="getFieldError('firstName')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('firstName') }}</div>
+            </div>
+            <div class="form-field">
+              <label for="middleName">Middle Name</label>
+              <input type="text" id="middleName" formControlName="middleName" placeholder="Michael (Optional)">
+            </div>
+          </div>
+
+          <!-- Last Name -->
+          <div class="form-field">
+            <label for="lastName">Last Name *</label>
+            <input type="text" id="lastName" formControlName="lastName" placeholder="Doe">
+            <div *ngIf="getFieldError('lastName')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('lastName') }}</div>
+          </div>
+
+          <!-- Date of Birth & Contact -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-field">
+              <label for="dateOfBirth">Date of Birth *</label>
+              <input 
+                type="date" 
+                id="dateOfBirth" 
+                formControlName="dateOfBirth"
+                [max]="getTodayDate()">
+              <div *ngIf="getFieldError('dateOfBirth')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('dateOfBirth') }}</div>
+            </div>
+            <div class="form-field">
+              <label for="contactNumber">Contact Number *</label>
+              <input type="tel" id="contactNumber" formControlName="contactNumber" placeholder="1234567890">
+              <div *ngIf="getFieldError('contactNumber')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('contactNumber') }}</div>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-field">
+            <label for="password">Password *</label>
+            <div class="password-input-wrapper">
+              <input 
+                [type]="showPassword ? 'text' : 'password'" 
+                id="password" 
+                formControlName="password" 
+                placeholder="••••••••">
+              <button type="button" class="password-toggle-btn" (click)="togglePassword()">
+                <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                </svg>
+                <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke-width="2"/>
+                  <line x1="1" y1="1" x2="23" y2="23" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+            <div *ngIf="getFieldError('password')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('password') }}</div>
+          </div>
+
+          <!-- Next Button -->
+          <button type="button" class="login-button" (click)="nextStep()" [disabled]="!isPersonalDetailsValid" style="margin-top: 1rem;">
+            Next: Address Details
+          </button>
+        </div>
+
+        <!-- Step 2: Address Details -->
+        <div *ngIf="currentStep === 2">
+          <div style="margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 600; color: #1a202c; margin-bottom: 1rem;">Address Details</h3>
+          </div>
+
+          <!-- Street Address -->
+          <div class="form-field">
+            <label for="street">Street Address *</label>
+            <input type="text" id="street" formControlName="street" placeholder="123 Main Street">
+            <div *ngIf="getFieldError('street')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('street') }}</div>
+          </div>
+
+          <!-- City & State -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-field">
+              <label for="city">City *</label>
+              <input type="text" id="city" formControlName="city" placeholder="New York">
+              <div *ngIf="getFieldError('city')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('city') }}</div>
+            </div>
+            <div class="form-field">
+              <label for="stateProvince">State/Province *</label>
+              <input type="text" id="stateProvince" formControlName="state" placeholder="NY">
+              <div *ngIf="getFieldError('state')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('state') }}</div>
+            </div>
+          </div>
+
+          <!-- Pincode -->
+          <div class="form-field">
+            <label for="pinZipCode">PIN/ZIP Code *</label>
+            <input type="text" id="pinZipCode" formControlName="pincode" placeholder="10001">
+            <div *ngIf="getFieldError('pincode')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('pincode') }}</div>
+          </div>
+
+          <!-- Country Search Dropdown -->
+          <div class="form-field" style="position: relative;">
+            <label for="country">Country *</label>
+            <input 
+              type="text" 
+              id="country" 
+              [(ngModel)]="countrySearchTerm"
+              [ngModelOptions]="{standalone: true}"
+              (input)="onCountrySearch($event)"
+              (focus)="onCountryInputFocus()"
+              (blur)="onCountryInputBlur()"
+              placeholder="Search country..."
+              autocomplete="off">
+            
+            <!-- Dropdown List -->
+            <div *ngIf="showCountryDropdown && filteredCountries.length > 0" 
+                 style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 0.375rem; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 0.25rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              <div *ngFor="let country of filteredCountries" 
+                   (mousedown)="selectCountry(country)"
+                   class="country-item"
+                   style="padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background-color 0.15s;">
+                <div style="font-weight: 500; color: #1a202c; pointer-events: none;">{{ country.name }}</div>
+                <div style="font-size: 0.75rem; color: #64748b; pointer-events: none;">{{ country.code }}</div>
+              </div>
+            </div>
+            
+            <div *ngIf="getFieldError('country')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('country') }}</div>
+          </div>
+
+          <!-- Nationality (Auto-populated, editable) -->
+          <div class="form-field">
+            <label for="nationality">Nationality *</label>
+            <input type="text" id="nationality" formControlName="nationality" placeholder="Your nationality">
+            <small style="color: #64748b; font-size: 0.75rem; margin-top: 0.25rem; display: block;">Auto-filled from country, but you can edit it</small>
+            <div *ngIf="getFieldError('nationality')" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ getFieldError('nationality') }}</div>
+          </div>
+
+          <!-- Agreement Checkbox -->
+          <div style="margin-top: 0.5rem;">
+            <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: #6b7280;">
+              <input type="checkbox" id="agreement" formControlName="agreement" style="margin-top: 0.25rem;">
+              <span>
+                I agree to the <a href="#" style="color: #5B21B6; text-decoration: none; font-weight: 500;">Terms of Service</a> and <a href="#" style="color: #5B21B6; text-decoration: none; font-weight: 500;">Privacy Policy</a>.
+              </span>
+            </label>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <button type="button" class="secondary-button" (click)="previousStep()">
+              Back
+            </button>
+            <button type="button" class="login-button" (click)="nextStep()" [disabled]="!isAddressDetailsValid">
+              Next: Email Verification
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Email Verification -->
+        <div *ngIf="currentStep === 3">
+          <div style="margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 600; color: #1a202c; margin-bottom: 1rem;">Email Verification</h3>
+            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem;">
+              We've sent a verification code to <strong>{{ registrationForm.get('email')?.value }}</strong>
+            </p>
+          </div>
+
+          <!-- OTP Input -->
+          <div class="form-field">
+            <label for="otp">Enter Verification Code *</label>
+            <input 
+              type="text" 
+              id="otp" 
+              name="otp"
+              [(ngModel)]="otp"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Enter 6-digit code"
+              maxlength="6"
+              style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; font-weight: 600;">
+          </div>
+
+          <div style="text-align: center; margin: 1rem 0;">
+            <p style="font-size: 0.875rem; color: #6b7280;">
+              Didn't receive the code? 
+              <button type="button" style="background: none; border: none; color: #5B21B6; font-weight: 600; cursor: pointer; text-decoration: underline;" (click)="sendOTP()">
+                Resend
+              </button>
+            </p>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <button type="button" class="secondary-button" (click)="previousStep()">
+              Back
+            </button>
+            <button type="submit" class="login-button" [disabled]="isLoading || !otp || otp.length !== 6">
+              <span *ngIf="!isLoading">Verify & Create Account</span>
+              <span *ngIf="isLoading">Verifying...</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Login Link -->
+        <div class="register-section">
+          <p>Already have an account? <a routerLink="/auth/login">Log in</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .country-item:hover {
+    background-color: #f8fafc !important;
+  }
+</style>
