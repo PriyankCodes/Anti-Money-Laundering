@@ -300,12 +300,16 @@ export class Profile implements OnInit {
   // Get field error message for live validation
   getFieldError(fieldName: string): string {
     const field = this.profileForm.get(fieldName);
-    if (field?.touched && field?.errors) {
+    if (field?.errors && (field?.touched || field?.dirty)) {
       if (field.errors['required']) return `${this.getFieldLabel(fieldName)} is required`;
-      if (field.errors['minlength']) return `${this.getFieldLabel(fieldName)} must be at least ${field.errors['minlength'].requiredLength} characters`;
+      if (field.errors['minlength']) {
+        const requiredLength = field.errors['minlength'].requiredLength;
+        const actualLength = field.errors['minlength'].actualLength;
+        return `${this.getFieldLabel(fieldName)} must be at least ${requiredLength} characters (currently ${actualLength})`;
+      }
       if (field.errors['pattern']) {
-        if (fieldName === 'pincode') return 'PIN code must be exactly 6 digits';
-        if (fieldName === 'contactNumber') return 'Contact number must be 10-15 digits (with optional + prefix)';
+        if (fieldName === 'pincode') return 'PIN code must be exactly 6 digits (numbers only)';
+        if (fieldName === 'contactNumber') return 'Contact number must be 10-15 digits with optional + prefix (e.g., +1234567890)';
         return `Invalid ${this.getFieldLabel(fieldName)} format`;
       }
       if (field.errors['futureDate']) return 'Date of birth cannot be in the future';
@@ -316,9 +320,12 @@ export class Profile implements OnInit {
   // Get OTP field error message
   getOtpError(): string {
     const field = this.otpForm.get('otp');
-    if (field?.touched && field?.errors) {
-      if (field.errors['required']) return 'OTP is required';
-      if (field.errors['pattern']) return 'OTP must be exactly 6 digits';
+    if (field?.errors && (field?.touched || field?.dirty)) {
+      if (field.errors['required']) return 'Verification code is required';
+      if (field.errors['pattern']) {
+        const currentLength = field.value?.length || 0;
+        return `Verification code must be exactly 6 digits (currently ${currentLength})`;
+      }
     }
     return '';
   }
@@ -348,5 +355,34 @@ export class Profile implements OnInit {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  // Get validation hint for fields
+  getFieldHint(fieldName: string): string {
+    const field = this.profileForm.get(fieldName);
+    if (!field?.errors && field?.pristine && this.isEditMode) {
+      switch (fieldName) {
+        case 'firstName':
+        case 'lastName':
+          return 'Minimum 2 characters required';
+        case 'contactNumber':
+          return 'Format: +1234567890 (10-15 digits)';
+        case 'pincode':
+          return 'Enter 6-digit postal code';
+        case 'dateOfBirth':
+          return 'Select your date of birth';
+        case 'nationality':
+          return 'e.g., Indian, American, British';
+        default:
+          return '';
+      }
+    }
+    return '';
+  }
+
+  // Check if field should show validation state
+  shouldShowValidation(fieldName: string): boolean {
+    const field = this.profileForm.get(fieldName);
+    return !!(field && (field.touched || field.dirty) && this.isEditMode);
   }
 }

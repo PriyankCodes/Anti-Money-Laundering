@@ -2248,3 +2248,109 @@ select.form-control:disabled {
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
+
+/* Confirmation Modal Styles */
+.confirmation-modal {
+  max-width: 500px;
+  width: 90%;
+}
+
+.confirmation-modal .modal-header {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.confirmation-modal .modal-header .header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.confirmation-modal .modal-header .header-title svg {
+  color: #0ea5e9;
+  flex-shrink: 0;
+}
+
+.confirmation-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.confirmation-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.confirmation-message {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0;
+  text-align: center;
+}
+
+.confirmation-modal .modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.confirmation-modal .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmation-modal .btn-secondary:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.confirmation-modal .btn-primary {
+  padding: 0.75rem 1.5rem;
+  background: #0ea5e9;
+  color: white;
+  border: 1px solid #0ea5e9;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.confirmation-modal .btn-primary:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+.confirmation-modal .btn-primary svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .confirmation-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .confirmation-modal .modal-actions {
+    flex-direction: column;
+  }
+  
+  .confirmation-modal .btn-secondary,
+  .confirmation-modal .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ComplianceService, SAR, Alert, Transaction } from '../../../core/services/compliance.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
@@ -102,7 +104,7 @@ interface SARDetailView {
 @Component({
   selector: 'app-sar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ToastComponent],
   templateUrl: './sar.html',
   styleUrls: ['./sar.css']
 })
@@ -133,6 +135,11 @@ export class Sar implements OnInit {
   showSarDetail = false;
   selectedSarDetail: SARDetailView | null = null;
   
+  // Custom Modal Confirmations
+  showSubmitConfirmModal = false;
+  showRegulatorSubmitModal = false;
+  pendingRegulatorSarId: number | null = null;
+  
   // Comprehensive SAR Data
   sarData: SARData = {
     subjectName: '',
@@ -159,7 +166,8 @@ export class Sar implements OnInit {
   constructor(
     private complianceService: ComplianceService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -287,8 +295,7 @@ export class Sar implements OnInit {
     const existingSAR = this.sars.find(sar => sar.alertId === alertId);
     
     if (existingSAR) {
-      this.errorMessage = `A SAR (#${existingSAR.sarId}) already exists for this alert. Only one SAR can be generated per alert.`;
-      setTimeout(() => this.errorMessage = '', 5000);
+      this.toastService.error(`SAR already exists for this alert! SAR #${existingSAR.sarId} was previously generated. Only one SAR can be created per alert.`);
       return;
     }
     
@@ -579,14 +586,23 @@ Based on the investigation conducted, the suspicious activity warrants filing of
 
   submitSAR(): void {
     if (!this.selectedAlertId) {
-      this.errorMessage = 'No alert selected';
+      this.toastService.error('No alert selected');
       return;
     }
 
     if (!this.isFormValid()) {
-      this.errorMessage = 'Please provide investigation notes and accept the declaration';
+      this.toastService.error('Please provide investigation notes and accept the declaration');
       return;
     }
+    
+    // Show custom confirmation modal
+    this.showSubmitConfirmModal = true;
+  }
+
+  confirmSubmitSAR(): void {
+    this.showSubmitConfirmModal = false;
+    
+    if (!this.selectedAlertId) return;
     
     // Only send the investigation notes to the backend
     const sarRequest = {
@@ -596,20 +612,29 @@ Based on the investigation conducted, the suspicious activity warrants filing of
     this.isLoading = true;
     this.complianceService.generateSAR(this.selectedAlertId, sarRequest).subscribe({
       next: (sar) => {
-        this.successMessage = `SAR #${sar.sarId} created successfully`;
+        this.toastService.success(`SAR Report #${sar.sarId} has been successfully generated and submitted for Alert #${this.selectedAlertId}!`);
         this.closeSarForm();
         this.loadSARs();
         this.isLoading = false;
-        setTimeout(() => this.successMessage = '', 3000);
       },
       error: (error) => {
         console.error('Error creating SAR:', error);
-        // Show the actual backend error message
-        this.errorMessage = error.error?.message || error.error?.error || 'Failed to create SAR';
+        // Show the actual backend error message with proper formatting
+        let errorMsg = error.error?.message || error.error?.error || 'Failed to create SAR';
+        
+        // Clean up the error message format
+        if (errorMsg.includes('An unexpected error occurred:')) {
+          errorMsg = errorMsg.replace('An unexpected error occurred: ', '');
+        }
+        
+        this.toastService.error(`Failed to submit SAR: ${errorMsg}`);
         this.isLoading = false;
-        setTimeout(() => this.errorMessage = '', 3000);
       }
     });
+  }
+
+  cancelSubmitSAR(): void {
+    this.showSubmitConfirmModal = false;
   }
 
   generateSARSummaryFromData(): string {
@@ -655,20 +680,33 @@ Based on the investigation conducted, the suspicious activity warrants filing of
   }
 
   submitSARToRegulator(sarId: number): void {
-    if (confirm('Submit this SAR to the regulator? This action cannot be undone.')) {
-      this.complianceService.submitSAR(sarId).subscribe({
-        next: (sar) => {
-          this.successMessage = `SAR #${sarId} submitted to regulator`;
-          this.loadSARs();
-          setTimeout(() => this.successMessage = '', 3000);
-        },
-        error: (error) => {
-          console.error('Error submitting SAR:', error);
-          this.errorMessage = 'Failed to submit SAR';
-          setTimeout(() => this.errorMessage = '', 3000);
-        }
-      });
-    }
+    this.pendingRegulatorSarId = sarId;
+    this.showRegulatorSubmitModal = true;
+  }
+
+  confirmRegulatorSubmit(): void {
+    this.showRegulatorSubmitModal = false;
+    
+    if (!this.pendingRegulatorSarId) return;
+    
+    const sarId = this.pendingRegulatorSarId;
+    this.pendingRegulatorSarId = null;
+    
+    this.complianceService.submitSAR(sarId).subscribe({
+      next: (sar) => {
+        this.toastService.success(`SAR #${sarId} has been successfully submitted to the regulator!`);
+        this.loadSARs();
+      },
+      error: (error) => {
+        console.error('Error submitting SAR:', error);
+        this.toastService.error(`Failed to submit SAR #${sarId} to regulator. Please try again.`);
+      }
+    });
+  }
+
+  cancelRegulatorSubmit(): void {
+    this.showRegulatorSubmitModal = false;
+    this.pendingRegulatorSarId = null;
   }
 
   getStatusClass(status: string): string {

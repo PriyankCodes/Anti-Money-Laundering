@@ -357,16 +357,45 @@ button:disabled {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
+.form-group input.valid,
+.form-group select.valid {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
 .error-message {
   color: #ef4444;
   font-size: 0.75rem;
   margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.success-message {
+  color: #10b981;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
 }
 
 .field-note {
   color: #64748b;
   font-size: 0.75rem;
   margin-top: 0.25rem;
+}
+
+.field-hint {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .field-note a {

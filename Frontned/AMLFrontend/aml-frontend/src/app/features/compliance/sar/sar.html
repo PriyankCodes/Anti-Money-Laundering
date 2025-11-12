@@ -660,3 +660,67 @@ Include:
     </div>
   </div>
 </div>
+
+<!-- SAR Submit Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showSubmitConfirmModal" (click)="cancelSubmitSAR()">
+  <div class="modal-content confirmation-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <h3>Confirm SAR Submission</h3>
+      </div>
+    </div>
+    
+    <div class="modal-body">
+      <p class="confirmation-message">
+        Are you sure you want to generate and submit this SAR report? This action cannot be undone.
+      </p>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancelSubmitSAR()">Cancel</button>
+      <button class="btn-primary" (click)="confirmSubmitSAR()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="9 11 12 14 22 4"/>
+        </svg>
+        Yes, Generate SAR Report
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SAR Regulator Submit Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showRegulatorSubmitModal" (click)="cancelRegulatorSubmit()">
+  <div class="modal-content confirmation-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <h3>Submit to Regulator</h3>
+      </div>
+    </div>
+    
+    <div class="modal-body">
+      <p class="confirmation-message">
+        Submit this SAR to the regulator? This action cannot be undone.
+      </p>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancelRegulatorSubmit()">Cancel</button>
+      <button class="btn-primary" (click)="confirmRegulatorSubmit()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="9 11 12 14 22 4"/>
+        </svg>
+        Yes, Submit to Regulator
+      </button>
+    </div>
+  </div>
+</div>

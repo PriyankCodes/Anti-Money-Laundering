@@ -122,19 +122,6 @@ export class Rules implements OnInit {
           description: 'Filter by transaction type'
         },
         {
-          name: 'accountSegment',
-          label: 'Account Segment',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'All Segments' },
-            { value: 'CORPORATE', label: 'CORPORATE' },
-            { value: 'RETAIL', label: 'RETAIL' },
-            { value: 'PREMIUM', label: 'PREMIUM' }
-          ],
-          description: 'Target specific account segment'
-        },
-        {
           name: 'isCrossBorder',
           label: 'Cross-Border Only',
           type: 'select',
@@ -154,18 +141,6 @@ export class Rules implements OnInit {
           description: 'Trigger if amount exceeds % of balance (e.g., 0.8 = 80%)',
           min: 0,
           max: 1
-        },
-        {
-          name: 'applyTo',
-          label: 'Apply To',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'All' },
-            { value: 'debit', label: 'Debit Only' },
-            { value: 'credit', label: 'Credit Only' }
-          ],
-          description: 'Apply ratio check to specific transaction direction'
         },
         {
           name: 'historicalDays',
@@ -195,17 +170,6 @@ export class Rules implements OnInit {
             { value: 'true', label: 'Yes' }
           ],
           description: 'Calculate averages separately per currency'
-        },
-        {
-          name: 'pattern',
-          label: 'Pattern Type',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'None' },
-            { value: 'round_figure', label: 'Round Figure (Structuring)' }
-          ],
-          description: 'Detect specific transaction patterns'
         },
         {
           name: 'rangeMinINR',
@@ -289,17 +253,6 @@ export class Rules implements OnInit {
           max: 1
         },
         {
-          name: 'thresholdField',
-          label: 'Threshold Field',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'None' },
-            { value: 'reportingThreshold', label: 'Reporting Threshold' }
-          ],
-          description: 'Field to compare against for structuring detection'
-        },
-        {
           name: 'applyToCredit',
           label: 'Apply to Credit',
           type: 'select',
@@ -364,43 +317,6 @@ export class Rules implements OnInit {
             { value: 'true', label: 'Yes' }
           ],
           description: 'Trigger only on first large transaction after dormancy'
-        },
-        {
-          name: 'minDepositAmountINR',
-          label: 'Min Deposit Amount (INR)',
-          type: 'number',
-          required: false,
-          placeholder: '10000',
-          description: 'Minimum deposit amount for cash frequency check (INR)'
-        },
-        {
-          name: 'minDepositAmountUSD',
-          label: 'Min Deposit Amount (USD)',
-          type: 'number',
-          required: false,
-          placeholder: '150',
-          description: 'Minimum deposit amount for cash frequency check (USD)'
-        },
-        {
-          name: 'minDepositAmountEUR',
-          label: 'Min Deposit Amount (EUR)',
-          type: 'number',
-          required: false,
-          placeholder: '140',
-          description: 'Minimum deposit amount for cash frequency check (EUR)'
-        },
-        {
-          name: 'channel',
-          label: 'Channel',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'All Channels' },
-            { value: 'CASH', label: 'CASH' },
-            { value: 'ONLINE', label: 'ONLINE' },
-            { value: 'ATM', label: 'ATM' }
-          ],
-          description: 'Transaction channel filter'
         },
         {
           name: 'perCurrencyOverrideINRMaxTransactions',
@@ -523,30 +439,6 @@ export class Rules implements OnInit {
           placeholder: '23000',
           description: 'Cumulative amount threshold (EUR)'
         },
-        {
-          name: 'minIndividualAmountUSD',
-          label: 'Min Individual Amount (USD)',
-          type: 'number',
-          required: false,
-          placeholder: '1000',
-          description: 'Minimum per-transaction amount for cumulative check (USD)'
-        },
-        {
-          name: 'minIndividualAmountINR',
-          label: 'Min Individual Amount (INR)',
-          type: 'number',
-          required: false,
-          placeholder: '83000',
-          description: 'Minimum per-transaction amount for cumulative check (INR)'
-        },
-        {
-          name: 'minIndividualAmountEUR',
-          label: 'Min Individual Amount (EUR)',
-          type: 'number',
-          required: false,
-          placeholder: '920',
-          description: 'Minimum per-transaction amount for cumulative check (EUR)'
-        }
       ]
     },
     'FUNNEL_ACCOUNT': {
@@ -630,41 +522,6 @@ export class Rules implements OnInit {
       description: 'Detects transactions involving high-risk countries and sanctions lists. Supports multi-currency thresholds and multiple risk sources.',
       fields: [
         {
-          name: 'countryListSource',
-          label: 'Country List Source',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'None' },
-            { value: 'FATF', label: 'FATF' },
-            { value: 'EU', label: 'EU' },
-            { value: 'UN', label: 'UN' }
-          ],
-          description: 'Source for country risk list'
-        },
-        {
-          name: 'sanctionsFeedsOFAC',
-          label: 'Include OFAC Sanctions',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'No' },
-            { value: 'true', label: 'Yes' }
-          ],
-          description: 'Check against OFAC sanctions list'
-        },
-        {
-          name: 'sanctionsFeedsUN',
-          label: 'Include UN Sanctions',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'No' },
-            { value: 'true', label: 'Yes' }
-          ],
-          description: 'Check against UN sanctions list'
-        },
-        {
           name: 'highRiskThresholdUSD',
           label: 'High Risk Threshold (USD)',
           type: 'number',
@@ -734,54 +591,11 @@ export class Rules implements OnInit {
           ],
           description: 'Check destination country against risk lists'
         },
-        {
-          name: 'matchCounterpartyCountry',
-          label: 'Match Counterparty Country',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'No' },
-            { value: 'true', label: 'Yes' }
-          ],
-          description: 'Check counterparty country against risk lists'
-        },
-        {
-          name: 'requireExactMatch',
-          label: 'Require Exact Match',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'No' },
-            { value: 'false', label: 'No (Fuzzy)' },
-            { value: 'true', label: 'Yes (Exact)' }
-          ],
-          description: 'Require exact country code match'
-        }
       ]
     },
     'KEYWORD': {
       description: 'Detects suspicious keywords in transaction descriptions using database-stored keywords. Supports multiple context fields and matching modes.',
       fields: [
-        {
-          name: 'keywordListId',
-          label: 'Keyword List ID',
-          type: 'text',
-          required: false,
-          placeholder: 'susp_terms_v1',
-          description: 'ID of the keyword list to use'
-        },
-        {
-          name: 'matchMode',
-          label: 'Match Mode',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'Any' },
-            { value: 'any', label: 'Any (OR)' },
-            { value: 'all', label: 'All (AND)' }
-          ],
-          description: 'How to match keywords'
-        },
         {
           name: 'minMatches',
           label: 'Minimum Matches',
@@ -790,39 +604,6 @@ export class Rules implements OnInit {
           placeholder: '1',
           min: 1,
           description: 'Minimum number of keywords to match'
-        },
-        {
-          name: 'contextFieldDescription',
-          label: 'Check Description Field',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'No' },
-            { value: 'true', label: 'Yes' }
-          ],
-          description: 'Search in transaction description'
-        },
-        {
-          name: 'contextFieldRemitterNote',
-          label: 'Check Remitter Note',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'No' },
-            { value: 'true', label: 'Yes' }
-          ],
-          description: 'Search in remitter note'
-        },
-        {
-          name: 'contextFieldBeneficiaryNote',
-          label: 'Check Beneficiary Note',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'No' },
-            { value: 'true', label: 'Yes' }
-          ],
-          description: 'Search in beneficiary note'
         },
         {
           name: 'caseInsensitive',
@@ -858,19 +639,6 @@ export class Rules implements OnInit {
           required: true,
           placeholder: '\\b[A-Z]{3}[0-9]{3}\\b',
           description: 'Regular expression pattern (e.g., \\bINV[0-9]{4}\\b for invoices)'
-        },
-        {
-          name: 'field',
-          label: 'Field to Match',
-          type: 'select',
-          required: false,
-          options: [
-            { value: '', label: 'Default (description)' },
-            { value: 'description', label: 'Description' },
-            { value: 'remitterNote', label: 'Remitter Note' },
-            { value: 'beneficiaryNote', label: 'Beneficiary Note' }
-          ],
-          description: 'Field to match (defaults to "description")'
         },
         {
           name: 'occurrenceWindowMinutes',

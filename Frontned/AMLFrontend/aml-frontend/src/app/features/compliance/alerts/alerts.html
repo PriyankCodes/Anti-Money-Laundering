@@ -809,5 +809,37 @@
   </div>
 </div>
 
+<!-- Assignment Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showAssignmentModal" (click)="cancelAssignment()">
+  <div class="modal-content confirmation-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="8.5" cy="7" r="4"/>
+          <polyline points="17 11 19 13 23 9"/>
+        </svg>
+        <h3>Assign Alert</h3>
+      </div>
+    </div>
+    
+    <div class="modal-body">
+      <p class="confirmation-message" *ngIf="pendingAssignmentAlert">
+        Assign alert #{{ pendingAssignmentAlert.alertId }} to yourself? Status will change to "Under Investigation".
+      </p>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancelAssignment()">Cancel</button>
+      <button class="btn-primary" (click)="confirmAssignment()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="9 11 12 14 22 4"/>
+        </svg>
+        Yes, Assign to Me
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Notifications -->
 <app-toast></app-toast>

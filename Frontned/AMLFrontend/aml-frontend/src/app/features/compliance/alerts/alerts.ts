@@ -53,6 +53,10 @@ export class Alerts implements OnInit {
   
   errorMessage = '';
   successMessage = '';
+  
+  // Assignment Confirmation Modal
+  showAssignmentModal = false;
+  pendingAssignmentAlert: Alert | null = null;
 
   constructor(
     private complianceService: ComplianceService,
@@ -258,29 +262,8 @@ export class Alerts implements OnInit {
   assignToMe(alert: Alert, event: Event): void {
     event.stopPropagation();
     
-    if (confirm(`Assign alert #${alert.alertId} to yourself? Status will change to "Under Investigation".`)) {
-      this.complianceService.assignAlertToMe(alert.alertId).subscribe({
-        next: (updatedAlert) => {
-          this.successMessage = `Alert #${alert.alertId} assigned and status changed to Under Investigation`;
-          
-          // Update the alert status locally
-          alert.status = 'UNDER_INVESTIGATION';
-          
-          // Remove from unassigned list immediately
-          this.allAlerts = this.allAlerts.filter(a => a.alertId !== alert.alertId);
-          this.applyFilters();
-          
-          // Reload to get updated data with new status
-          this.loadAlerts();
-          setTimeout(() => this.successMessage = '', 3000);
-        },
-        error: (error) => {
-          console.error('Error assigning alert:', error);
-          this.errorMessage = 'Failed to assign alert';
-          setTimeout(() => this.errorMessage = '', 3000);
-        }
-      });
-    }
+    this.pendingAssignmentAlert = alert;
+    this.showAssignmentModal = true;
   }
 
   openInvestigation(alertId: number): void {
@@ -587,5 +570,39 @@ export class Alerts implements OnInit {
     }
     
     return true;
+  }
+
+  confirmAssignment(): void {
+    this.showAssignmentModal = false;
+    
+    if (!this.pendingAssignmentAlert) return;
+    
+    const alert = this.pendingAssignmentAlert;
+    this.pendingAssignmentAlert = null;
+    
+    this.complianceService.assignAlertToMe(alert.alertId).subscribe({
+      next: (updatedAlert) => {
+        this.toastService.success(`Alert #${alert.alertId} has been successfully assigned to you and status changed to Under Investigation`);
+        
+        // Update the alert status locally
+        alert.status = 'UNDER_INVESTIGATION';
+        
+        // Remove from unassigned list immediately
+        this.allAlerts = this.allAlerts.filter(a => a.alertId !== alert.alertId);
+        this.applyFilters();
+        
+        // Reload to get updated data with new status
+        this.loadAlerts();
+      },
+      error: (error) => {
+        console.error('Error assigning alert:', error);
+        this.toastService.error('Failed to assign alert. Please try again.');
+      }
+    });
+  }
+
+  cancelAssignment(): void {
+    this.showAssignmentModal = false;
+    this.pendingAssignmentAlert = null;
   }
 }

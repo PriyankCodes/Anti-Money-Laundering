@@ -65,10 +65,17 @@
               id="firstName" 
               formControlName="firstName"
               [readonly]="!isEditMode"
-              [class.error]="f['firstName'].invalid && f['firstName'].touched">
-            <div *ngIf="f['firstName'].invalid && f['firstName'].touched" class="error-message">
-              <span *ngIf="f['firstName'].errors?.['required']">First name is required</span>
-              <span *ngIf="f['firstName'].errors?.['minlength']">First name must be at least 2 characters</span>
+              [class.error]="getFieldError('firstName')"
+              [class.valid]="f['firstName'].valid && f['firstName'].touched && isEditMode"
+              placeholder="Enter your first name">
+            <div *ngIf="getFieldError('firstName')" class="error-message">
+              {{ getFieldError('firstName') }}
+            </div>
+            <div *ngIf="f['firstName'].valid && f['firstName'].touched && isEditMode" class="success-message">
+              ✓ Valid first name
+            </div>
+            <div *ngIf="getFieldHint('firstName')" class="field-hint">
+              {{ getFieldHint('firstName') }}
             </div>
           </div>
 
@@ -78,7 +85,8 @@
               type="text" 
               id="middleName" 
               formControlName="middleName"
-              [readonly]="!isEditMode">
+              [readonly]="!isEditMode"
+              placeholder="Enter your middle name (optional)">
           </div>
         </div>
 
@@ -90,10 +98,14 @@
               id="lastName" 
               formControlName="lastName"
               [readonly]="!isEditMode"
-              [class.error]="f['lastName'].invalid && f['lastName'].touched">
-            <div *ngIf="f['lastName'].invalid && f['lastName'].touched" class="error-message">
-              <span *ngIf="f['lastName'].errors?.['required']">Last name is required</span>
-              <span *ngIf="f['lastName'].errors?.['minlength']">Last name must be at least 2 characters</span>
+              [class.error]="getFieldError('lastName')"
+              [class.valid]="f['lastName'].valid && f['lastName'].touched && isEditMode"
+              placeholder="Enter your last name">
+            <div *ngIf="getFieldError('lastName')" class="error-message">
+              {{ getFieldError('lastName') }}
+            </div>
+            <div *ngIf="f['lastName'].valid && f['lastName'].touched && isEditMode" class="success-message">
+              ✓ Valid last name
             </div>
           </div>
 
@@ -104,10 +116,14 @@
               id="contactNumber" 
               formControlName="contactNumber"
               [readonly]="!isEditMode"
-              [class.error]="f['contactNumber'].invalid && f['contactNumber'].touched">
-            <div *ngIf="f['contactNumber'].invalid && f['contactNumber'].touched" class="error-message">
-              <span *ngIf="f['contactNumber'].errors?.['required']">Contact number is required</span>
-              <span *ngIf="f['contactNumber'].errors?.['pattern']">Please enter a valid contact number</span>
+              [class.error]="getFieldError('contactNumber')"
+              [class.valid]="f['contactNumber'].valid && f['contactNumber'].touched && isEditMode"
+              placeholder="Enter your contact number (e.g., +1234567890)">
+            <div *ngIf="getFieldError('contactNumber')" class="error-message">
+              {{ getFieldError('contactNumber') }}
+            </div>
+            <div *ngIf="f['contactNumber'].valid && f['contactNumber'].touched && isEditMode" class="success-message">
+              ✓ Valid contact number
             </div>
           </div>
         </div>
@@ -116,7 +132,7 @@
           <div class="form-group">
             <label for="email">Email Address</label>
             <input type="email" id="email" [value]="profile.email" readonly class="readonly-field">
-            <small class="field-note">Email cannot be changed. <a href="#" (click)="sendOTP()">Send OTP to verify</a></small>
+            <small class="field-note">Email cannot be changed.</small>
           </div>
 
           <div class="form-group">
@@ -126,9 +142,14 @@
               id="dateOfBirth" 
               formControlName="dateOfBirth"
               [readonly]="!isEditMode"
-              [class.error]="f['dateOfBirth'].invalid && f['dateOfBirth'].touched">
-            <div *ngIf="f['dateOfBirth'].invalid && f['dateOfBirth'].touched" class="error-message">
-              Date of birth is required
+              [class.error]="getFieldError('dateOfBirth')"
+              [class.valid]="f['dateOfBirth'].valid && f['dateOfBirth'].touched && isEditMode"
+              [max]="getTodayDate()">
+            <div *ngIf="getFieldError('dateOfBirth')" class="error-message">
+              {{ getFieldError('dateOfBirth') }}
+            </div>
+            <div *ngIf="f['dateOfBirth'].valid && f['dateOfBirth'].touched && isEditMode" class="success-message">
+              ✓ Valid date of birth
             </div>
           </div>
         </div>
@@ -141,9 +162,14 @@
               id="nationality" 
               formControlName="nationality"
               [readonly]="!isEditMode"
-              [class.error]="f['nationality'].invalid && f['nationality'].touched">
-            <div *ngIf="f['nationality'].invalid && f['nationality'].touched" class="error-message">
-              Nationality is required
+              [class.error]="getFieldError('nationality')"
+              [class.valid]="f['nationality'].valid && f['nationality'].touched && isEditMode"
+              placeholder="Enter your nationality (e.g., Indian, American)">
+            <div *ngIf="getFieldError('nationality')" class="error-message">
+              {{ getFieldError('nationality') }}
+            </div>
+            <div *ngIf="f['nationality'].valid && f['nationality'].touched && isEditMode" class="success-message">
+              ✓ Valid nationality
             </div>
           </div>
         </div>
@@ -160,9 +186,14 @@
             id="street" 
             formControlName="street"
             [readonly]="!isEditMode"
-            [class.error]="f['street'].invalid && f['street'].touched">
-          <div *ngIf="f['street'].invalid && f['street'].touched" class="error-message">
-            Street address is required
+            [class.error]="getFieldError('street')"
+            [class.valid]="f['street'].valid && f['street'].touched && isEditMode"
+            placeholder="Enter your street address">
+          <div *ngIf="getFieldError('street')" class="error-message">
+            {{ getFieldError('street') }}
+          </div>
+          <div *ngIf="f['street'].valid && f['street'].touched && isEditMode" class="success-message">
+            ✓ Valid street address
           </div>
         </div>
 
@@ -174,9 +205,14 @@
               id="city" 
               formControlName="city"
               [readonly]="!isEditMode"
-              [class.error]="f['city'].invalid && f['city'].touched">
-            <div *ngIf="f['city'].invalid && f['city'].touched" class="error-message">
-              City is required
+              [class.error]="getFieldError('city')"
+              [class.valid]="f['city'].valid && f['city'].touched && isEditMode"
+              placeholder="Enter your city">
+            <div *ngIf="getFieldError('city')" class="error-message">
+              {{ getFieldError('city') }}
+            </div>
+            <div *ngIf="f['city'].valid && f['city'].touched && isEditMode" class="success-message">
+              ✓ Valid city
             </div>
           </div>
 
@@ -187,9 +223,14 @@
               id="state" 
               formControlName="state"
               [readonly]="!isEditMode"
-              [class.error]="f['state'].invalid && f['state'].touched">
-            <div *ngIf="f['state'].invalid && f['state'].touched" class="error-message">
-              State is required
+              [class.error]="getFieldError('state')"
+              [class.valid]="f['state'].valid && f['state'].touched && isEditMode"
+              placeholder="Enter your state or province">
+            <div *ngIf="getFieldError('state')" class="error-message">
+              {{ getFieldError('state') }}
+            </div>
+            <div *ngIf="f['state'].valid && f['state'].touched && isEditMode" class="success-message">
+              ✓ Valid state
             </div>
           </div>
         </div>
@@ -202,9 +243,15 @@
               id="pincode" 
               formControlName="pincode"
               [readonly]="!isEditMode"
-              [class.error]="f['pincode'].invalid && f['pincode'].touched">
-            <div *ngIf="f['pincode'].invalid && f['pincode'].touched" class="error-message">
-              PIN code is required
+              [class.error]="getFieldError('pincode')"
+              [class.valid]="f['pincode'].valid && f['pincode'].touched && isEditMode"
+              placeholder="Enter 6-digit PIN code"
+              maxlength="6">
+            <div *ngIf="getFieldError('pincode')" class="error-message">
+              {{ getFieldError('pincode') }}
+            </div>
+            <div *ngIf="f['pincode'].valid && f['pincode'].touched && isEditMode" class="success-message">
+              ✓ Valid PIN code
             </div>
           </div>
 
@@ -215,9 +262,14 @@
               id="country" 
               formControlName="country"
               [readonly]="!isEditMode"
-              [class.error]="f['country'].invalid && f['country'].touched">
-            <div *ngIf="f['country'].invalid && f['country'].touched" class="error-message">
-              Country is required
+              [class.error]="getFieldError('country')"
+              [class.valid]="f['country'].valid && f['country'].touched && isEditMode"
+              placeholder="Enter your country">
+            <div *ngIf="getFieldError('country')" class="error-message">
+              {{ getFieldError('country') }}
+            </div>
+            <div *ngIf="f['country'].valid && f['country'].touched && isEditMode" class="success-message">
+              ✓ Valid country
             </div>
           </div>
         </div>
@@ -246,11 +298,14 @@
           formControlName="otp"
           placeholder="Enter 6-digit code"
           maxlength="6"
-          [class.error]="of['otp'].invalid && of['otp'].touched"
+          [class.error]="getOtpError()"
+          [class.valid]="of['otp'].valid && of['otp'].touched"
           autofocus>
-        <div *ngIf="of['otp'].invalid && of['otp'].touched" class="error-message">
-          <span *ngIf="of['otp'].errors?.['required']">Verification code is required</span>
-          <span *ngIf="of['otp'].errors?.['pattern']">Please enter a valid 6-digit code</span>
+        <div *ngIf="getOtpError()" class="error-message">
+          {{ getOtpError() }}
+        </div>
+        <div *ngIf="of['otp'].valid && of['otp'].touched" class="success-message">
+          ✓ Valid verification code
         </div>
       </div>
     </form>
