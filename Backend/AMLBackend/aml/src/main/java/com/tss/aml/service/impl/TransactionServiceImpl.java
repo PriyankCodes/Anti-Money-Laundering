@@ -217,38 +217,22 @@ public class TransactionServiceImpl implements TransactionService {
 						receiverAccount.getCurrency(), transferRequest.getAmount());
 
 				// Calculate proper amounts: 
-				// 1. Deduct original amount from sender (in sender currency)
-				// 2. Calculate fee in sender currency (convert fee back from target currency)
-				// 3. Deposit converted amount to receiver (in receiver currency)
-				finalAmount = conversionResult.getConvertedAmount(); // Amount to deposit in receiver account
+				// 1. Deduct original amount from sender (in sender currency) - NO ADDITIONAL FEE
+				// 2. Deposit net converted amount to receiver (in receiver currency) - FEE ALREADY DEDUCTED
+				finalAmount = conversionResult.getNetAmount(); // Net amount after fee deduction
 				
-				// Convert fee back to sender currency for deduction
-				BigDecimal feeInSenderCurrency;
-				if (conversionResult.getConversionFee().compareTo(BigDecimal.ZERO) > 0) {
-					// Convert fee from target currency back to sender currency
-					CurrencyConversionResult feeConversion = currencyService.convertCurrency(
-						receiverAccount.getCurrency(), senderAccount.getCurrency(), conversionResult.getConversionFee());
-					feeInSenderCurrency = feeConversion.getConvertedAmount();
-				} else {
-					feeInSenderCurrency = BigDecimal.ZERO;
-				}
-				
-				totalDeductionFromSender = transferRequest.getAmount().add(feeInSenderCurrency);
+				// Sender only pays the original amount - fee is absorbed from conversion
+				totalDeductionFromSender = transferRequest.getAmount();
 
-				logger.info("✅ Currency conversion: {} {} = {} {} (Fee: {} {})", transferRequest.getAmount(),
-						senderAccount.getCurrency(), finalAmount, receiverAccount.getCurrency(),
-						feeInSenderCurrency, senderAccount.getCurrency());
+				logger.info("✅ Currency conversion: Debit {} {} → Credit {} {} (fee {} {} absorbed from conversion)", 
+						transferRequest.getAmount(), senderAccount.getCurrency(),
+						finalAmount, receiverAccount.getCurrency(),
+						conversionResult.getConversionFee(), receiverAccount.getCurrency());
 			}
 
-			// Check if sender has sufficient balance (including conversion fee if applicable)
+			// Check if sender has sufficient balance
 			if (senderAccount.getBalance().compareTo(totalDeductionFromSender) < 0) {
-				String errorMsg;
-				if (conversionResult != null) {
-					BigDecimal feeInSenderCurrency = totalDeductionFromSender.subtract(transferRequest.getAmount());
-					errorMsg = "Insufficient balance for transfer including conversion fee of " + feeInSenderCurrency + " " + senderAccount.getCurrency();
-				} else {
-					errorMsg = "Insufficient balance";
-				}
+				String errorMsg = "Insufficient balance for transfer of " + transferRequest.getAmount() + " " + senderAccount.getCurrency();
 				auditService.logFailure(AuditAction.TRANSFER_FUNDS, AuditResourceType.TRANSACTION, null, userId, null,
 						errorMsg, ipAddress);
 				throw new UserApiException(errorMsg);
@@ -258,8 +242,9 @@ public class TransactionServiceImpl implements TransactionService {
 			Transaction transaction = new Transaction();
 			transaction.setCustomer(senderAccount.getCustomer());
 			transaction.setSenderAccountNumber(senderAccount.getAccountNumber());
-			transaction.setAmount(finalAmount);
-			transaction.setCurrency(receiverAccount.getCurrency());
+			// Record original amount and sender currency for clarity
+			transaction.setAmount(transferRequest.getAmount());
+			transaction.setCurrency(senderAccount.getCurrency());
 			transaction.setDescription(transferRequest.getDescription());
 			transaction.setTransactionType(TransactionType.TRANSFER);
 			// Fetch country code from request or customer's country field
