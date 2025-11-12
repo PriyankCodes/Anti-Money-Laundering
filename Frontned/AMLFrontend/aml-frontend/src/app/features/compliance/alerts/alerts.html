@@ -419,7 +419,7 @@
           </div>
         </div>
 
-        <!-- 2. Triggered Rules & Why Flagged -->
+        <!-- 2. Triggered Rules & Analysis -->
         <div class="investigation-section">
           <h3>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
@@ -429,12 +429,25 @@
             </svg>
             2. Triggered Rules & Analysis
           </h3>
-          <div class="simple-rule-box">
-            <div class="rule-label">Rule Triggered:</div>
-            <div class="rule-value">{{ selectedAlert.ruleTriggered }}</div>
-            <div class="rule-description">
-              <strong>Why Flagged:</strong> {{ getRuleDescription(selectedAlert.ruleTriggered, selectedAlert) }}
-            </div>
+          <div class="rules-table-container">
+            <table class="rules-table">
+              <thead>
+                <tr>
+                  <th>Rule Name</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rule of parseTriggeredRules(selectedAlert.ruleTriggered)">
+                  <td class="rule-name">{{ rule }}</td>
+                  <td>
+                    <span class="rule-type-badge">{{ getRuleType(rule, selectedAlert) }}</span>
+                  </td>
+                  <td class="rule-desc">{{ getRuleDescription(rule, selectedAlert) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           
           <!-- Toggle Detailed Review Button -->
