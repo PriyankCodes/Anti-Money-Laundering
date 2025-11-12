@@ -46,8 +46,24 @@
     <!-- Transfer Form -->
     <div *ngIf="activeFormTab === 'transfer'" class="form-content">
       <div class="form-header">
-        <h4 class="form-title">Transfer Money</h4>
-        <p class="form-subtitle">Send money to another account.</p>
+        <div class="form-title-row">
+          <div>
+            <h4 class="form-title">Transfer Money</h4>
+            <p class="form-subtitle">Send money to another account.</p>
+          </div>
+          <button 
+            type="button" 
+            class="btn btn-secondary currency-calc-btn"
+            (click)="openCurrencyCalculator()"
+            title="Currency Calculator">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <path d="M12 17h.01"/>
+            </svg>
+            Currency Calculator
+          </button>
+        </div>
       </div>
 
       <form (ngSubmit)="submitTransaction()" #transactionFormRef="ngForm">
@@ -79,6 +95,7 @@
               min="0.01"
               step="0.01"
               required
+              (input)="onAmountChange()"
               class="form-input">
           </div>
 
@@ -93,6 +110,9 @@
               placeholder="9876543210"
               required
               class="form-input">
+            <div *ngIf="convertedAmountDisplay" class="converted-amount-display">
+              {{ convertedAmountDisplay }}
+            </div>
           </div>
 
           <!-- Description (Optional) - Full Width -->
@@ -595,6 +615,122 @@
         </svg>
         Download PDF
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Currency Calculator Modal -->
+<div *ngIf="showCurrencyCalculator" class="modal-overlay" (click)="closeCurrencyCalculator()">
+  <div class="modal-content currency-calculator-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Currency Calculator</h3>
+      <button class="modal-close" (click)="closeCurrencyCalculator()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="currency-form">
+        <div class="currency-row">
+          <div class="form-group">
+            <label for="fromCurrency">From Currency</label>
+            <select 
+              id="fromCurrency" 
+              [(ngModel)]="currencyCalculator.fromCurrency" 
+              class="form-select">
+              <option *ngFor="let currency of supportedCurrencies" [value]="currency">
+                {{ currency }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="toCurrency">To Currency</label>
+            <select 
+              id="toCurrency" 
+              [(ngModel)]="currencyCalculator.toCurrency" 
+              class="form-select">
+              <option *ngFor="let currency of supportedCurrencies" [value]="currency">
+                {{ currency }}
+              </option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="calcAmount">Amount</label>
+          <input 
+            type="number" 
+            id="calcAmount" 
+            [(ngModel)]="currencyCalculator.amount" 
+            placeholder="Enter amount"
+            min="0.01"
+            step="0.01"
+            class="form-input">
+        </div>
+        
+        <button 
+          class="btn btn-primary calculate-btn"
+          (click)="calculateCurrency()"
+          [disabled]="isConverting || !currencyCalculator.amount">
+          <svg *ngIf="isConverting" class="btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+            <path d="M12 2A10 10 0 0 1 22 12" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          {{ isConverting ? 'Converting...' : 'Calculate' }}
+        </button>
+      </div>
+      
+      <!-- Conversion Result -->
+      <div *ngIf="conversionResult" class="conversion-result">
+        <div class="result-header">
+          <h4>Conversion Result</h4>
+        </div>
+        
+        <div class="result-details">
+          <div class="result-row">
+            <span class="label">Original Amount:</span>
+            <span class="value">{{ conversionResult.originalAmount | number:'1.2-2' }} {{ conversionResult.fromCurrency }}</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="label">Exchange Rate:</span>
+            <span class="value">1 {{ conversionResult.fromCurrency }} = {{ conversionResult.exchangeRate | number:'1.6-6' }} {{ conversionResult.toCurrency }}</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="label">Gross Converted Amount:</span>
+            <span class="value">{{ conversionResult.convertedAmount | number:'1.2-2' }} {{ conversionResult.toCurrency }}</span>
+          </div>
+          
+          <div class="result-row">
+            <span class="label">Conversion Fee:</span>
+            <span class="value">-{{ conversionResult.conversionFee | number:'1.2-2' }} {{ conversionResult.toCurrency }}</span>
+          </div>
+          
+          <div class="result-row total">
+            <span class="label">Net Amount (You'll Receive):</span>
+            <span class="value">{{ conversionResult.netAmount | number:'1.2-2' }} {{ conversionResult.toCurrency }}</span>
+          </div>
+        </div>
+        
+        <div class="conversion-note">
+          <small style="color: #64748b; font-size: 0.875rem;">
+            <strong>Note:</strong> When you transfer {{ conversionResult.originalAmount | number:'1.2-2' }} {{ conversionResult.fromCurrency }}, 
+            the recipient will receive {{ conversionResult.netAmount | number:'1.2-2' }} {{ conversionResult.toCurrency }} 
+            (after conversion fees).
+          </small>
+        </div>
+        
+        <div class="result-actions">
+          <button class="btn btn-primary" (click)="useCurrencyConversion()">
+            Use This Conversion
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -6,6 +6,7 @@ import { TransactionService } from '../../../core/services/transaction.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { CurrencyService, CurrencyConversion } from '../../../core/services/currency.service';
 import { Transaction, Account } from '../../../core/models/dashboard.models';
 
 @Component({
@@ -26,6 +27,18 @@ export class Transactions implements OnInit {
     amount: 0,
     description: ''
   };
+
+  // Currency conversion
+  supportedCurrencies: string[] = [];
+  showCurrencyCalculator: boolean = false;
+  currencyCalculator = {
+    fromCurrency: 'INR',
+    toCurrency: 'USD',
+    amount: 0
+  };
+  conversionResult: CurrencyConversion | null = null;
+  isConverting: boolean = false;
+  convertedAmountDisplay: string = '';
 
   // Data
   accounts: Account[] = [];
@@ -78,11 +91,13 @@ export class Transactions implements OnInit {
     private dashboardService: DashboardService,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private currencyService: CurrencyService
   ) {}
 
   ngOnInit(): void {
     this.loadInitialData();
+    this.loadSupportedCurrencies();
     
     // Check for query parameters to open specific modals
     this.route.queryParams.subscribe(params => {
@@ -1134,5 +1149,91 @@ export class Transactions implements OnInit {
       amount: 0,
       purpose: ''
     };
+  }
+
+  // Currency conversion methods
+  loadSupportedCurrencies(): void {
+    this.currencyService.getSupportedCurrencies().subscribe({
+      next: (currencies) => {
+        this.supportedCurrencies = currencies;
+        console.log('Supported currencies loaded:', currencies);
+      },
+      error: (error) => {
+        console.error('Error loading supported currencies:', error);
+        this.toastService.error('Failed to load supported currencies');
+      }
+    });
+  }
+
+  openCurrencyCalculator(): void {
+    this.showCurrencyCalculator = true;
+    this.currencyCalculator.amount = this.transactionForm.amount || 0;
+  }
+
+  closeCurrencyCalculator(): void {
+    this.showCurrencyCalculator = false;
+    this.conversionResult = null;
+  }
+
+  calculateCurrency(): void {
+    if (!this.currencyCalculator.amount || this.currencyCalculator.amount <= 0) {
+      this.toastService.error('Please enter a valid amount');
+      return;
+    }
+
+    this.isConverting = true;
+    this.currencyService.convertCurrency(
+      this.currencyCalculator.fromCurrency,
+      this.currencyCalculator.toCurrency,
+      this.currencyCalculator.amount
+    ).subscribe({
+      next: (result) => {
+        this.conversionResult = result;
+        this.isConverting = false;
+        console.log('Currency conversion result:', result);
+      },
+      error: (error) => {
+        console.error('Currency conversion error:', error);
+        this.toastService.error('Failed to convert currency. Please try again.');
+        this.isConverting = false;
+      }
+    });
+  }
+
+  useCurrencyConversion(): void {
+    if (this.conversionResult) {
+      this.transactionForm.amount = this.conversionResult.originalAmount;
+      this.updateConvertedAmountDisplay();
+      this.closeCurrencyCalculator();
+      this.toastService.success('Currency conversion applied to transaction');
+    }
+  }
+
+  // Update converted amount display when amount changes
+  updateConvertedAmountDisplay(): void {
+    if (this.transactionForm.amount > 0) {
+      // Get sender account currency
+      const senderAccount = this.accounts.find(acc => acc.accountNumber === this.transactionForm.senderAccountNumber);
+      if (senderAccount && senderAccount.currency !== 'INR') {
+        // Convert to INR for display
+        this.currencyService.convertCurrency(senderAccount.currency, 'INR', this.transactionForm.amount).subscribe({
+          next: (result) => {
+            this.convertedAmountDisplay = `≈ ₹${result.convertedAmount.toFixed(2)} INR`;
+          },
+          error: () => {
+            this.convertedAmountDisplay = '';
+          }
+        });
+      } else {
+        this.convertedAmountDisplay = '';
+      }
+    } else {
+      this.convertedAmountDisplay = '';
+    }
+  }
+
+  // Call this when amount changes
+  onAmountChange(): void {
+    this.updateConvertedAmountDisplay();
   }
 }
