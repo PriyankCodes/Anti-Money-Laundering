@@ -41,11 +41,24 @@ public class KycDocumentServiceImpl implements KycDocumentService {
 				.orElseThrow(() -> new RuntimeException("Customer not found"));
 
 		// Check if document type already exists and is verified
-		Optional<KycDocument> existingDoc = kycDocumentRepository.findByCustomerUserIdAndDocTypeAndStatus(customerId,
+		Optional<KycDocument> existingVerifiedDoc = kycDocumentRepository.findByCustomerUserIdAndDocTypeAndStatus(customerId,
 				docType, KycStatus.VERIFIED);
 
-		if (existingDoc.isPresent()) {
+		if (existingVerifiedDoc.isPresent()) {
 			throw new RuntimeException("Document type " + docType + " already verified for this customer");
+		}
+
+		// Allow re-upload for pending and rejected documents - delete existing ones
+		List<KycDocument> existingDocs = kycDocumentRepository.findByCustomerUserIdAndDocType(customerId, docType);
+		for (KycDocument existingDoc : existingDocs) {
+			if (existingDoc.getStatus() == KycStatus.PENDING || existingDoc.getStatus() == KycStatus.REJECTED) {
+				// Delete the old file from storage
+				if (existingDoc.getFileUrl() != null) {
+					fileStorageService.deleteFile(existingDoc.getFileUrl());
+				}
+				// Delete the database record
+				kycDocumentRepository.delete(existingDoc);
+			}
 		}
 
 		// Store file
@@ -82,7 +95,12 @@ public class KycDocumentServiceImpl implements KycDocumentService {
 		document.setVerificationTimestamp(LocalDateTime.now());
 		document.setValidated(status == KycStatus.VERIFIED);
 
-		return kycDocumentRepository.save(document);
+		KycDocument savedDocument = kycDocumentRepository.save(document);
+
+		// Update customer KYC status if all required documents are verified
+		updateCustomerKycStatus(document.getCustomer().getUserId());
+
+		return savedDocument;
 	}
 
 	public List<KycDocument> getCustomerDocuments(Long customerId) {
@@ -103,8 +121,31 @@ public class KycDocumentServiceImpl implements KycDocumentService {
 
 	public boolean isCustomerKycComplete(Long customerId) {
 		long verifiedCount = kycDocumentRepository.countVerifiedDocumentsByCustomer(customerId);
-		// Minimum required documents for complete KYC
-		return verifiedCount >= 2; // At least 2 verified documents required
+		// All 5 document types must be verified for complete KYC
+		return verifiedCount >= 5; // All 5 documents required (PASSPORT, PAN, AADHAAR, DRIVING_LICENSE, VOTER_ID)
+	}
+
+	private void updateCustomerKycStatus(Long customerId) {
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new RuntimeException("Customer not found"));
+
+		// Check if all 5 documents are verified
+		if (isCustomerKycComplete(customerId)) {
+			customer.setKycStatus(KycStatus.VERIFIED);
+		} else {
+			// Check if any document is rejected
+			List<KycDocument> customerDocs = kycDocumentRepository.findByCustomerUserId(customerId);
+			boolean hasRejected = customerDocs.stream()
+					.anyMatch(doc -> doc.getStatus() == KycStatus.REJECTED);
+			
+			if (hasRejected) {
+				customer.setKycStatus(KycStatus.REJECTED);
+			} else {
+				customer.setKycStatus(KycStatus.PENDING);
+			}
+		}
+
+		customerRepository.save(customer);
 	}
 
 	public void deleteDocument(Long documentId) {

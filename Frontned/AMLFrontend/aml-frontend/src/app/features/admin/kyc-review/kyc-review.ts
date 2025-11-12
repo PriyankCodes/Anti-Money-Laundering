@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { KycService } from '../../../core/services/kyc.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { 
   KycDocument, 
@@ -86,7 +87,8 @@ export class KycReview implements OnInit {
 
   constructor(
     private router: Router,
-    private kycService: KycService
+    private kycService: KycService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -122,7 +124,7 @@ export class KycReview implements OnInit {
       },
       error: (error) => {
         console.error('Error loading pending documents:', error);
-        alert('Failed to load pending documents. Please try again.');
+        this.toastService.error('Failed to load pending documents. Please try again.');
         this.loading = false;
       }
     });
@@ -138,7 +140,7 @@ export class KycReview implements OnInit {
       },
       error: (error) => {
         console.error('Error loading KYC documents:', error);
-        alert('Failed to load KYC documents. Please try again.');
+        this.toastService.error('Failed to load KYC documents. Please try again.');
         this.loading = false;
       }
     });
@@ -162,7 +164,7 @@ export class KycReview implements OnInit {
       },
       error: (error) => {
         console.error('Error loading documents by status:', error);
-        alert('Failed to load documents. Please try again.');
+        this.toastService.error('Failed to load documents. Please try again.');
         this.loading = false;
       }
     });
@@ -296,7 +298,7 @@ export class KycReview implements OnInit {
 
   openBulkActionModal(action: 'bulk-approve' | 'bulk-reject'): void {
     if (this.selectedDocuments.length === 0) {
-      alert('Please select documents first.');
+      this.toastService.warning('Please select documents first.');
       return;
     }
     this.actionModal = {
@@ -326,7 +328,7 @@ export class KycReview implements OnInit {
       );
     } else if (action === 'reject' && documentId) {
       if (!notes.trim()) {
-        alert('Please provide notes for rejection.');
+        this.toastService.warning('Please provide notes for rejection.');
         return;
       }
       this.updateDocumentStatus(
@@ -338,7 +340,7 @@ export class KycReview implements OnInit {
       this.processBulkAction(KycStatus.VERIFIED, notes || 'Bulk verification completed');
     } else if (action === 'bulk-reject') {
       if (!notes.trim()) {
-        alert('Please provide notes for bulk rejection.');
+        this.toastService.warning('Please provide notes for bulk rejection.');
         return;
       }
       this.processBulkAction(KycStatus.REJECTED, notes);
@@ -357,12 +359,13 @@ export class KycReview implements OnInit {
 
     this.kycService.verifyDocument(request).subscribe({
       next: () => {
-        alert(`Document #${doc.id} has been ${status.toLowerCase()} successfully.`);
+        const statusText = status === KycStatus.VERIFIED ? 'verified' : 'rejected';
+        this.toastService.success(`Document #${doc.id} has been ${statusText} successfully.`);
         this.refreshData();
       },
       error: (error) => {
         console.error('Error updating document status:', error);
-        alert('Failed to update document status. Please try again.');
+        this.toastService.error('Failed to update document status. Please try again.');
       }
     });
   }
@@ -429,12 +432,13 @@ export class KycReview implements OnInit {
     });
 
     Promise.all(promises).then(() => {
-      alert(`${this.selectedDocuments.length} documents have been ${status.toLowerCase()} successfully.`);
+      const statusText = status === KycStatus.VERIFIED ? 'verified' : 'rejected';
+      this.toastService.success(`${this.selectedDocuments.length} documents have been ${statusText} successfully.`);
       this.selectedDocuments = [];
       this.refreshData();
     }).catch(error => {
       console.error('Error in bulk operation:', error);
-      alert('Some documents failed to update. Please try again.');
+      this.toastService.error('Some documents failed to update. Please try again.');
     });
   }
 

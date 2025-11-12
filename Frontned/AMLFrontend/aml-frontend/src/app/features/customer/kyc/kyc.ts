@@ -424,16 +424,30 @@ export class KycComponent implements OnInit {
   }
 
   getProgressPercentage(): number {
-    if (!this.kycStatus) return 0;
-    return Math.round((this.kycStatus.verifiedDocuments / Math.max(this.kycStatus.totalDocuments, 1)) * 100);
+    if (!this.kycStatus || !this.documents) return 0;
+    
+    // Count unique verified document types (not total documents)
+    const verifiedDocumentTypes = new Set();
+    this.documents.forEach(doc => {
+      if (doc.status === KycStatus.VERIFIED) {
+        verifiedDocumentTypes.add(doc.documentType);
+      }
+    });
+    
+    const totalRequiredDocuments = 5; // All 5 document types required
+    const verifiedCount = verifiedDocumentTypes.size;
+    
+    return Math.round((verifiedCount / totalRequiredDocuments) * 100);
   }
 
   getRequiredDocuments(): DocumentType[] {
-    // Define required documents for KYC completion (at least one should be verified)
+    // Define required documents for KYC completion (all 5 must be verified)
     return [
       DocumentType.PASSPORT,
       DocumentType.PAN,
-      DocumentType.AADHAAR
+      DocumentType.AADHAAR,
+      DocumentType.DRIVING_LICENSE,
+      DocumentType.VOTER_ID
     ];
   }
 
