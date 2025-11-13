@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { RegisterRequest } from '../../../core/models/auth.models';
 import { CountryService } from '../../../core/services/country.service';
 import { Country } from '../../../core/models/country.models';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -33,6 +34,7 @@ export class RegisterComponent implements OnInit {
   showCountryDropdown: boolean = false;
   selectedCountry: Country | null = null;
 
+
   registerData: RegisterRequest = {
     email: '',
     password: '',
@@ -53,7 +55,8 @@ export class RegisterComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private countryService: CountryService
+    private countryService: CountryService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -345,8 +348,10 @@ export class RegisterComponent implements OnInit {
           // OTP sent successfully, move to step 3
           this.otpSent = true;
           this.currentStep = 3;
+          this.toastService.success('OTP sent to your email! Please check your inbox.');
         } else {
           this.errorMessage = response.message || 'Registration failed';
+          this.toastService.error(this.errorMessage);
           this.scrollToTop();
         }
       },
@@ -355,6 +360,8 @@ export class RegisterComponent implements OnInit {
         console.error('Registration error:', error);
         
         // Handle different types of errors
+        let errorMessage = 'Registration failed. Please check your information and try again.';
+        
         if (error.error) {
           // Check if it's a validation error with field-specific messages
           if (error.error.errors && Array.isArray(error.error.errors)) {
@@ -362,22 +369,30 @@ export class RegisterComponent implements OnInit {
             const errorMessages = error.error.errors.map((err: any) => 
               `${err.field}: ${err.defaultMessage || err.message}`
             ).join(', ');
-            this.errorMessage = errorMessages;
+            errorMessage = errorMessages;
           } else if (error.error.message) {
             // Standard error message
-            this.errorMessage = error.error.message;
+            errorMessage = error.error.message;
           } else if (typeof error.error === 'string') {
             // Plain string error
-            this.errorMessage = error.error;
-          } else {
-            // Generic error
-            this.errorMessage = 'Registration failed. Please check your information and try again.';
+            errorMessage = error.error;
+          } else if (error.error.error) {
+            // Nested error
+            errorMessage = error.error.error;
           }
         } else if (error.message) {
-          this.errorMessage = error.message;
-        } else {
-          this.errorMessage = 'An error occurred during registration';
+          errorMessage = error.message;
         }
+        
+        this.errorMessage = errorMessage;
+        
+        // Show toast notification for better visibility
+        this.toastService.error(errorMessage);
+        
+        // Clear the error message after 8 seconds
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 8000);
         
         this.scrollToTop();
       }
@@ -510,6 +525,7 @@ export class RegisterComponent implements OnInit {
     // This is called from step 3 - OTP verification
     if (!this.otp || this.otp.length !== 6) {
       this.errorMessage = 'Please enter a valid 6-digit verification code';
+      this.toastService.error('Please enter a valid 6-digit verification code');
       return;
     }
 
@@ -526,17 +542,20 @@ export class RegisterComponent implements OnInit {
         this.isLoading = false;
         if (response.success) {
           // Navigate to login page after successful verification
+          this.toastService.success('Registration completed successfully! You can now login.');
           this.router.navigate(['/auth/login'], {
             queryParams: { verified: 'true' }
           });
         } else {
           this.errorMessage = response.message || 'OTP verification failed';
+          this.toastService.error(this.errorMessage);
           this.scrollToTop();
         }
       },
       error: (error) => {
         this.isLoading = false;
         this.errorMessage = error.error?.message || 'An error occurred during verification';
+        this.toastService.error(this.errorMessage);
         console.error('OTP verification error:', error);
         this.scrollToTop();
       }
@@ -569,4 +588,5 @@ export class RegisterComponent implements OnInit {
   private scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
 }

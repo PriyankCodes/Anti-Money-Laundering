@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CustomerProfileService, CustomerProfile, ProfileUpdateRequest, PasswordChangeRequest } from '../../../core/services/customer-profile.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-profile',
@@ -27,7 +28,6 @@ export class Profile implements OnInit {
   // OTP state
   otpSent: boolean = false;
   
-  
   // Messages
   successMessage: string = '';
   errorMessage: string = '';
@@ -35,7 +35,8 @@ export class Profile implements OnInit {
   constructor(
     private profileService: CustomerProfileService,
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     this.initializeForms();
   }
@@ -64,7 +65,6 @@ export class Profile implements OnInit {
       otp: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
     });
   }
-
 
   // Load customer profile
   loadProfile(): void {
@@ -140,10 +140,12 @@ export class Profile implements OnInit {
         this.saving = false;
         this.showOTPModal = true;
         this.successMessage = 'OTP sent to your email. Please enter the code to update your profile.';
+        this.toastService.success('OTP sent to your email! Please check your inbox.');
       },
       error: (error: any) => {
         console.error('Error sending OTP:', error);
         this.errorMessage = error.error?.message || 'Failed to send OTP. Please try again.';
+        this.toastService.error(this.errorMessage);
         this.saving = false;
       }
     });
@@ -177,52 +179,38 @@ export class Profile implements OnInit {
         this.otpForm.reset();
         this.otpSent = false;
         this.saving = false;
+        
+        // Show success toast
+        this.toastService.success('Profile updated successfully!');
       },
       error: (error: any) => {
         console.error('Error updating profile:', error);
-        this.errorMessage = error.error?.message || 'Failed to update profile. Please try again.';
         this.saving = false;
-      }
-    });
-  }
-
-  // Send OTP for verification
-  sendOTP(): void {
-    if (!this.profile?.email) {
-      this.errorMessage = 'Email not found. Please refresh the page.';
-      return;
-    }
-
-    console.log('Sending OTP to email:', this.profile.email);
-    this.saving = true;
-    this.clearMessages();
-    
-    this.profileService.sendOTP().subscribe({
-      next: (response) => {
-        console.log('OTP sent successfully:', response);
-        this.otpSent = true;
-        this.successMessage = 'OTP sent to your email address. Please check your inbox.';
-        this.saving = false;
-      },
-      error: (error: any) => {
-        console.error('Error sending OTP:', error);
-        console.error('Error details:', error.error);
         
-        let errorMsg = 'Failed to send OTP. Please try again.';
-        if (error.error?.message) {
-          errorMsg = error.error.message;
+        // Extract error message from different possible formats
+        let errorMessage = 'Failed to update profile. Please try again.';
+        
+        if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMessage = error.error;
+          } else if (error.error.message) {
+            errorMessage = error.error.message;
+          } else if (error.error.error) {
+            errorMessage = error.error.error;
+          }
         } else if (error.message) {
-          errorMsg = error.message;
-        } else if (error.status === 0) {
-          errorMsg = 'Cannot connect to server. Please check your connection.';
-        } else if (error.status === 401) {
-          errorMsg = 'Authentication failed. Please login again.';
-        } else if (error.status === 403) {
-          errorMsg = 'Access denied. Please contact support.';
+          errorMessage = error.message;
         }
         
-        this.errorMessage = errorMsg;
-        this.saving = false;
+        this.errorMessage = errorMessage;
+        
+        // Show toast notification for better visibility
+        this.toastService.error(errorMessage);
+        
+        // Clear the error message after 8 seconds
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 8000);
       }
     });
   }
@@ -237,7 +225,6 @@ export class Profile implements OnInit {
     // Update profile with the verified OTP
     this.updateProfileWithOTP();
   }
-
 
   // Utility methods
   markFormGroupTouched(formGroup: FormGroup): void {
@@ -385,4 +372,5 @@ export class Profile implements OnInit {
     const field = this.profileForm.get(fieldName);
     return !!(field && (field.touched || field.dirty) && this.isEditMode);
   }
+
 }

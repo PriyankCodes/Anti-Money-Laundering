@@ -89,6 +89,13 @@ public class AuthServiceImpl implements AuthService {
 		if (userRepository.findByEmail(request.getEmail()).isPresent()) {
 			throw new UserApiException("Email already registered");
 		}
+		
+		// Check if phone number already exists
+		if (request.getContactNumber() != null && !request.getContactNumber().trim().isEmpty()) {
+			if (customerRepository.existsByContactNumber(request.getContactNumber().trim())) {
+				throw new UserApiException("Phone number already registered. Please use a different phone number.");
+			}
+		}
 
 		// Remove any existing pending registration for this email
 		pendingRegistrations.remove(request.getEmail());

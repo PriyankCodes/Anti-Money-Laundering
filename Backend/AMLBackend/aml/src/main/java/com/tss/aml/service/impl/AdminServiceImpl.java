@@ -87,6 +87,7 @@ public class AdminServiceImpl implements AdminService {
 
 	@Autowired
 	private com.tss.aml.service.EmailService emailService;
+	
 
 	private Admin getCurrentAdmin() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -102,6 +103,13 @@ public class AdminServiceImpl implements AdminService {
 	public ComplianceOfficer createComplianceOfficer(ComplianceOfficerRequest request) {
 		if (complianceOfficerRepo.findByEmail(request.getEmail()).isPresent()) {
 			throw new RuntimeException("Email already exists");
+		}
+		
+		// Check if phone number already exists
+		if (request.getPhone() != null && !request.getPhone().trim().isEmpty()) {
+			if (complianceOfficerRepo.existsByPhone(request.getPhone().trim())) {
+				throw new RuntimeException("Phone number already registered. Please use a different phone number.");
+			}
 		}
 
 		// Store the plain password before encoding for email

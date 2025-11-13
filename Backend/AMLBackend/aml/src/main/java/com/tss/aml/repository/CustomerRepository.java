@@ -43,5 +43,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
            "HAVING COALESCE(AVG(a.riskScore), 0) >= 60 " +
            "ORDER BY COALESCE(AVG(a.riskScore), 0) DESC")
     List<Object[]> findTopRiskCustomers(@Param("limit") int limit);
+    
+    // Phone number uniqueness validation
+    Optional<Customer> findByContactNumber(String contactNumber);
+    boolean existsByContactNumber(String contactNumber);
+    
+    // Check if contact number exists excluding current customer
+    @Query("SELECT COUNT(c) > 0 FROM Customer c WHERE c.contactNumber = :contactNumber AND c.userId != :userId")
+    boolean existsByContactNumberAndUserIdNot(@Param("contactNumber") String contactNumber, @Param("userId") Long userId);
 
 }

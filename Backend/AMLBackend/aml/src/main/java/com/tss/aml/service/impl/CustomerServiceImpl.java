@@ -29,6 +29,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
 	private OtpService otpService;
+	
 
 	@Override
 	public CustomerProfileDto getCustomerProfile(Long customerId) {
@@ -66,6 +67,13 @@ public class CustomerServiceImpl implements CustomerService {
 
 		Customer customer = customerRepository.findById(customerId)
 				.orElseThrow(() -> new RuntimeException("Customer not found"));
+
+		// Check if phone number already exists (excluding current user)
+		if (request.getContactNumber() != null && !request.getContactNumber().trim().isEmpty()) {
+			if (customerRepository.existsByContactNumberAndUserIdNot(request.getContactNumber().trim(), customerId)) {
+				throw new RuntimeException("Phone number already registered. Please use a different phone number.");
+			}
+		}
 
 		// Update profile fields
 		if (request.getFirstName() != null) {

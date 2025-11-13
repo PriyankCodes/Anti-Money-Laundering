@@ -1141,4 +1141,5 @@ export class Users implements OnInit {
       currency: 'USD'
     }).format(amount || 0);
   }
+
 }
