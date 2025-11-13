@@ -17,13 +17,11 @@ public class RuleRequest {
     @NotBlank
     private String name;
     
-    @NotBlank
     private String description;
     
     @NotNull
     private RuleType type;
     
-    @NotBlank
     private String conditions; // JSON string
     
     @Min(1) @Max(100)

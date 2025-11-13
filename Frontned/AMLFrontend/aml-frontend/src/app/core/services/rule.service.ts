@@ -58,8 +58,8 @@ export class RuleService {
       name: ruleData.name,
       type: ruleData.type,
       riskScoreImpact: ruleData.impact || 50,
-      description: ruleData.description || '',
-      conditions: ruleData.condition || '',
+      description: ruleData.description || null,
+      conditions: ruleData.condition || null,
       active: true
     };
     
@@ -81,8 +81,8 @@ export class RuleService {
       name: ruleData.name,
       type: ruleData.type,
       riskScoreImpact: ruleData.impact || 50,
-      description: ruleData.description || '',
-      conditions: ruleData.condition || '',
+      description: ruleData.description || null,
+      conditions: ruleData.condition || null,
       active: ruleData.isActive !== undefined ? ruleData.isActive : true
     };
     

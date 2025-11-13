@@ -228,7 +228,7 @@ export class Rules implements OnInit {
           name: 'maxTransactions',
           label: 'Max Transactions',
           type: 'number',
-          required: true,
+          required: false,
           placeholder: '5',
           min: 1,
           description: 'Maximum allowed transactions in window'
@@ -237,7 +237,7 @@ export class Rules implements OnInit {
           name: 'timeWindowMinutes',
           label: 'Time Window (Minutes)',
           type: 'number',
-          required: true,
+          required: false,
           placeholder: '60',
           min: 1,
           description: 'Time window in minutes (e.g., 60=1hr, 1440=1day, 43200=30days)'
@@ -354,7 +354,7 @@ export class Rules implements OnInit {
           name: 'timeWindowMinutes',
           label: 'Time Window (Minutes)',
           type: 'number',
-          required: true,
+          required: false,
           placeholder: '30',
           min: 1,
           description: 'Primary time window for velocity check'
@@ -387,7 +387,7 @@ export class Rules implements OnInit {
           name: 'maxTransactions',
           label: 'Max Transactions',
           type: 'number',
-          required: true,
+          required: false,
           placeholder: '5',
           min: 1,
           description: 'Maximum allowed transactions in window'
@@ -448,7 +448,7 @@ export class Rules implements OnInit {
           name: 'minSendersShortWindow',
           label: 'Min Senders (Short Window)',
           type: 'number',
-          required: true,
+          required: false,
           placeholder: '5',
           min: 1,
           description: 'Minimum unique senders in short window'
@@ -457,7 +457,7 @@ export class Rules implements OnInit {
           name: 'timeWindowMinutesShort',
           label: 'Time Window Short (Minutes)',
           type: 'number',
-          required: true,
+          required: false,
           placeholder: '60',
           min: 1,
           description: 'Short time window for counting senders'
@@ -1041,19 +1041,19 @@ export class Rules implements OnInit {
       isValid = false;
     }
 
-    // Impact validation
-    if (rule.impact === null || rule.impact === undefined || rule.impact < 0 || rule.impact > 100) {
+    // Impact validation (optional, but if provided must be valid)
+    if (rule.impact !== null && rule.impact !== undefined && (rule.impact < 0 || rule.impact > 100)) {
       this.formErrors.impact = 'Impact must be between 0 and 100';
       isValid = false;
     }
 
-    // Description validation
+    // Description validation (optional, but if provided check length)
     if (rule.description && rule.description.length > 500) {
       this.formErrors.description = 'Description must be less than 500 characters';
       isValid = false;
     }
 
-    // Condition validation
+    // Condition validation (optional, but if provided must be valid JSON)
     if (rule.condition && rule.condition.trim().length > 0) {
       if (!this.validateConditionFormat(rule.condition)) {
         this.formErrors.condition = 'Invalid condition format. Use JSON format like: {"regex": "pattern", "field": "fieldName"}';
@@ -1460,7 +1460,8 @@ export class Rules implements OnInit {
     
     let isValid = true;
     
-    // Check required fields
+    // Only validate required fields that are explicitly marked as required
+    // Most fields are now optional to allow flexible rule creation
     config.fields.forEach(field => {
       if (field.required) {
         const value = formFields[field.name];
@@ -1471,23 +1472,8 @@ export class Rules implements OnInit {
       }
     });
     
-    // Special validation for THRESHOLD rule
-    if (ruleType === 'THRESHOLD') {
-      const hasAmountThreshold = formFields['amountThreshold'] !== undefined && 
-                                 formFields['amountThreshold'] !== null && 
-                                 formFields['amountThreshold'] !== '';
-      const hasMinAmount = formFields['minAmount'] !== undefined && 
-                          formFields['minAmount'] !== null && 
-                          formFields['minAmount'] !== '';
-      const hasMaxAmount = formFields['maxAmount'] !== undefined && 
-                          formFields['maxAmount'] !== null && 
-                          formFields['maxAmount'] !== '';
-      
-      if (!hasAmountThreshold && !hasMinAmount && !hasMaxAmount) {
-        this.formErrors['amountThreshold'] = 'At least one of Amount Threshold, Min Amount, or Max Amount is required';
-        isValid = false;
-      }
-    }
+    // Remove special validation for THRESHOLD rule - all fields are now optional
+    // Rules can be created with empty conditions and configured later
     
     return isValid;
   }
