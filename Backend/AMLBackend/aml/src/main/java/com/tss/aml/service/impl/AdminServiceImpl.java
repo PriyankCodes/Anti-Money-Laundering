@@ -34,13 +34,18 @@ import com.tss.aml.entity.enums.KycStatus;
 import com.tss.aml.entity.enums.UserStatus;
 import com.tss.aml.repository.AccountRepository;
 import com.tss.aml.repository.AdminRepository;
+import com.tss.aml.repository.AlertRepository;
+import com.tss.aml.repository.AuditLogRepository;
 import com.tss.aml.repository.ComplianceOfficerRepository;
 import com.tss.aml.repository.CustomerRepository;
 import com.tss.aml.repository.KycDocumentRepository;
 import com.tss.aml.repository.RiskyCountryRepository;
 import com.tss.aml.repository.RuleRepository;
 import com.tss.aml.repository.SuspiciousKeywordRepository;
+import com.tss.aml.repository.TransactionRepository;
 import com.tss.aml.service.AdminService;
+import com.tss.aml.service.AuditService;
+import com.tss.aml.service.EmailService;
 
 @Service
 @Transactional
@@ -74,19 +79,19 @@ public class AdminServiceImpl implements AdminService {
 	private KycDocumentRepository kycDocumentRepo;
 
 	@Autowired
-	private com.tss.aml.repository.TransactionRepository transactionRepo;
+	private TransactionRepository transactionRepo;
 
 	@Autowired
-	private com.tss.aml.repository.AlertRepository alertRepo;
+	private AlertRepository alertRepo;
 
 	@Autowired
-	private com.tss.aml.repository.AuditLogRepository auditLogRepo;
+	private AuditLogRepository auditLogRepo;
 
 	@Autowired
-	private com.tss.aml.service.AuditService auditService;
+	private AuditService auditService;
 
 	@Autowired
-	private com.tss.aml.service.EmailService emailService;
+	private EmailService emailService;
 	
 
 	private Admin getCurrentAdmin() {

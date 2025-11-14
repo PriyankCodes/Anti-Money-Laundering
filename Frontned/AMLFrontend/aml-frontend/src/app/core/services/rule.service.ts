@@ -63,13 +63,23 @@ export class RuleService {
       active: true
     };
     
+    console.log('=== RULE SERVICE DEBUG ===');
+    console.log('API URL:', `${this.API_URL}/admin/rules`);
+    console.log('Payload:', payload);
+    console.log('HTTP Options:', this.getHttpOptions());
+    console.log('=== END RULE SERVICE DEBUG ===');
+    
     return this.http.post<any>(`${this.API_URL}/admin/rules`, payload, this.getHttpOptions()).pipe(
       map((response: any) => {
+        console.log('Rule service SUCCESS response:', response);
         const responseData = response.data || response;
         return this.mapToRule(responseData);
       }),
       catchError(error => {
-        console.error('Rule create failed:', error);
+        console.error('Rule service ERROR:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        console.error('Error body:', error.error);
         return throwError(() => error);
       })
     );

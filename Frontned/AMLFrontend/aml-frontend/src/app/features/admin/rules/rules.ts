@@ -62,7 +62,7 @@ export class Rules implements OnInit {
   // Form data
   newRule: RuleCreateRequest = {
     name: '',
-    type: 'PATTERN',
+    type: 'THRESHOLD',
     impact: 50,
     description: '',
     condition: ''
@@ -636,7 +636,7 @@ export class Rules implements OnInit {
           name: 'regex',
           label: 'Regular Expression',
           type: 'text',
-          required: true,
+          required: false,
           placeholder: '\\b[A-Z]{3}[0-9]{3}\\b',
           description: 'Regular expression pattern (e.g., \\bINV[0-9]{4}\\b for invoices)'
         },
@@ -820,7 +820,7 @@ export class Rules implements OnInit {
   openAddModal(): void {
     this.newRule = {
       name: '',
-      type: 'PATTERN',
+      type: 'THRESHOLD',
       impact: 50,
       description: '',
       condition: ''
@@ -886,27 +886,64 @@ export class Rules implements OnInit {
 
   // CRUD Operations
   createRule(): void {
-    // Generate JSON condition from dynamic form fields
-    this.newRule.condition = this.generateConditionJson(this.newRule.type, this.dynamicFormFields);
-    
-    if (!this.validateRuleForm(this.newRule)) {
+    // Prevent duplicate submissions
+    if (this.isSubmitting) {
+      console.log('Already submitting, ignoring duplicate call');
       return;
     }
+    
+    console.log('=== CREATE RULE DEBUG START ===');
+    console.log('1. Initial newRule data:', this.newRule);
+    console.log('2. Dynamic form fields:', this.dynamicFormFields);
+    
+    // Generate JSON condition from dynamic form fields
+    this.newRule.condition = this.generateConditionJson(this.newRule.type, this.dynamicFormFields);
+    console.log('3. Generated condition:', this.newRule.condition);
+    
+    // Allow empty conditions for flexible rule creation
+    if (!this.newRule.condition || this.newRule.condition.trim() === '' || this.newRule.condition === '{}') {
+      this.newRule.condition = '{}';
+      console.log('3.1. Using empty condition for flexible rule creation');
+    }
+    
+    console.log('4. About to validate form...');
+    if (!this.validateRuleForm(this.newRule)) {
+      console.log('5. Form validation FAILED');
+      console.log('6. Form errors:', this.formErrors);
+      console.log('7. Detailed form errors:');
+      Object.keys(this.formErrors).forEach(key => {
+        console.log(`   - ${key}: ${this.formErrors[key]}`);
+      });
+      return;
+    }
+    console.log('5. Form validation PASSED');
 
+    console.log('6. Setting isSubmitting to true and calling service...');
     this.isSubmitting = true;
+    
+    console.log('7. Final payload being sent:', this.newRule);
     this.ruleService.createRule(this.newRule).subscribe({
       next: (rule) => {
+        console.log('8. SUCCESS - Rule created:', rule);
         this.rules.push(rule);
         this.updateStatistics();
         this.applyFilters();
         this.closeModals();
         this.showSuccessMessage('Rule created successfully');
+        console.log('=== CREATE RULE DEBUG END (SUCCESS) ===');
       },
       error: (error) => {
-        console.error('Error creating rule:', error);
+        console.error('8. ERROR creating rule:', error);
+        console.error('Error details:', {
+          status: error.status,
+          statusText: error.statusText,
+          message: error.message,
+          error: error.error
+        });
         this.isSubmitting = false;
         const errorMsg = error.error?.message || error.message || 'Unknown error';
         this.showErrorMessage(`Failed to create rule: ${errorMsg}`);
+        console.log('=== CREATE RULE DEBUG END (ERROR) ===');
       }
     });
   }
@@ -1020,53 +1057,91 @@ export class Rules implements OnInit {
 
   // Form validation
   private validateRuleForm(rule: any): boolean {
+    console.log('=== VALIDATION DEBUG START ===');
+    console.log('Rule to validate:', rule);
+    
     this.formErrors = {};
     let isValid = true;
 
     // Name validation
+    console.log('Validating name:', rule.name);
     if (!rule.name || rule.name.trim().length === 0) {
       this.formErrors.name = 'Rule name is required';
       isValid = false;
+      console.log('Name validation FAILED: empty');
     } else if (rule.name.trim().length < 3) {
       this.formErrors.name = 'Rule name must be at least 3 characters';
       isValid = false;
+      console.log('Name validation FAILED: too short');
     } else if (rule.name.trim().length > 100) {
       this.formErrors.name = 'Rule name must be less than 100 characters';
       isValid = false;
+      console.log('Name validation FAILED: too long');
+    } else {
+      console.log('Name validation PASSED');
     }
 
     // Type validation
+    console.log('Validating type:', rule.type);
     if (!rule.type) {
       this.formErrors.type = 'Rule type is required';
       isValid = false;
+      console.log('Type validation FAILED');
+    } else {
+      console.log('Type validation PASSED');
     }
 
     // Impact validation (optional, but if provided must be valid)
+    console.log('Validating impact:', rule.impact);
     if (rule.impact !== null && rule.impact !== undefined && (rule.impact < 0 || rule.impact > 100)) {
       this.formErrors.impact = 'Impact must be between 0 and 100';
       isValid = false;
+      console.log('Impact validation FAILED');
+    } else {
+      console.log('Impact validation PASSED');
     }
 
     // Description validation (optional, but if provided check length)
+    console.log('Validating description:', rule.description);
     if (rule.description && rule.description.length > 500) {
       this.formErrors.description = 'Description must be less than 500 characters';
       isValid = false;
+      console.log('Description validation FAILED');
+    } else {
+      console.log('Description validation PASSED');
     }
 
     // Condition validation (optional, but if provided must be valid JSON)
+    console.log('Validating condition:', rule.condition);
     if (rule.condition && rule.condition.trim().length > 0) {
-      if (!this.validateConditionFormat(rule.condition)) {
-        this.formErrors.condition = 'Invalid condition format. Use JSON format like: {"regex": "pattern", "field": "fieldName"}';
+      console.log('Condition exists, validating format...');
+      try {
+        // Just check if it's valid JSON - don't validate content structure
+        JSON.parse(rule.condition);
+        console.log('Condition validation PASSED - Valid JSON');
+      } catch (e) {
+        this.formErrors.condition = 'Invalid JSON format in condition';
         isValid = false;
+        console.log('Condition validation FAILED - Invalid JSON');
       }
+    } else {
+      console.log('No condition to validate');
     }
     
     // Validate dynamic fields (for add/edit forms)
+    console.log('Validating dynamic fields...');
     const formFields = this.showAddModal ? this.dynamicFormFields : this.editDynamicFormFields;
+    console.log('Form fields to validate:', formFields);
     if (!this.validateDynamicFields(rule.type, formFields)) {
       isValid = false;
+      console.log('Dynamic fields validation FAILED');
+    } else {
+      console.log('Dynamic fields validation PASSED');
     }
 
+    console.log('=== VALIDATION DEBUG END ===');
+    console.log('Final validation result:', isValid);
+    console.log('Final form errors:', this.formErrors);
     return isValid;
   }
 
@@ -1441,6 +1516,11 @@ export class Rules implements OnInit {
       }
     });
     
+    // If no meaningful conditions were generated, return empty object
+    if (Object.keys(condition).length === 0) {
+      return '{}';
+    }
+    
     return JSON.stringify(condition);
   }
   
@@ -1455,25 +1535,42 @@ export class Rules implements OnInit {
   }
   
   validateDynamicFields(ruleType: string, formFields: any): boolean {
+    console.log('=== DYNAMIC FIELDS VALIDATION START ===');
+    console.log('Rule type:', ruleType);
+    console.log('Form fields:', formFields);
+    
     const config = this.getRuleTypeConfig(ruleType);
-    if (!config) return true;
+    console.log('Rule config:', config);
+    
+    if (!config) {
+      console.log('No config found, returning true');
+      return true;
+    }
     
     let isValid = true;
     
     // Only validate required fields that are explicitly marked as required
     // Most fields are now optional to allow flexible rule creation
+    console.log('Checking required fields...');
     config.fields.forEach(field => {
+      console.log(`Checking field: ${field.name}, required: ${field.required}`);
       if (field.required) {
         const value = formFields[field.name];
+        console.log(`Field ${field.name} value:`, value);
         if (value === undefined || value === null || value === '') {
+          console.log(`Field ${field.name} is REQUIRED but empty!`);
           this.formErrors[field.name] = `${field.label} is required`;
           isValid = false;
+        } else {
+          console.log(`Field ${field.name} is valid`);
         }
+      } else {
+        console.log(`Field ${field.name} is optional, skipping`);
       }
     });
     
-    // Remove special validation for THRESHOLD rule - all fields are now optional
-    // Rules can be created with empty conditions and configured later
+    console.log('=== DYNAMIC FIELDS VALIDATION END ===');
+    console.log('Dynamic fields validation result:', isValid);
     
     return isValid;
   }

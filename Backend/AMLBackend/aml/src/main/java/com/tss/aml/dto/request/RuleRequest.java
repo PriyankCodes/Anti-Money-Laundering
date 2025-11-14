@@ -24,7 +24,7 @@ public class RuleRequest {
     
     private String conditions; // JSON string
     
-    @Min(1) @Max(100)
+    @Min(0) @Max(100)
     private Integer riskScoreImpact;
     
     private Boolean active = true;

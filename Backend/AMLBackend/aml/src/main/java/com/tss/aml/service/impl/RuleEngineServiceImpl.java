@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +31,6 @@ public class RuleEngineServiceImpl implements RuleEngineService {
     private final RuleRepository ruleRepository;
     private final List<RuleEvaluator> evaluators;
 
-    @Autowired
     public RuleEngineServiceImpl(RuleRepository ruleRepository, List<RuleEvaluator> evaluators) {
         this.ruleRepository = ruleRepository;
         this.evaluators = evaluators;
@@ -81,7 +79,7 @@ public class RuleEngineServiceImpl implements RuleEngineService {
 
                     // Convert absolute impact (1-100) into probability-like p in (0,1)
                     // using exponential transform: p = 1 - exp(-impact / DECAY_SCALE)
-                    double p = 1.0 - Math.exp(-riskImpact / DECAY_SCALE);
+                    double p = 1.0 - (riskImpact / DECAY_SCALE);
 
                     // Update product of (1 - p_i)
                     productOfNotP *= (1.0 - p);
